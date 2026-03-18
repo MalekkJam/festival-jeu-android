@@ -6,9 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.festivaljeumobile"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.festivaljeumobile"
@@ -16,7 +14,6 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -37,6 +34,7 @@ android {
         compose = true
     }
 }
+
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -46,24 +44,25 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    // Nav3 + sérialisation
+    implementation(libs.androidx.material.icons.extended)          // ✅ corrigé
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    // Nav3
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    // Retrofit + OkHttp
+    implementation(libs.retrofit2)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging)
+    implementation(libs.retrofit2.converter.kotlinx.serialization)
+    // Serialization
     implementation(libs.kotlinx.serialization.core)
-    implementation(libs.compose.material.icons.extended)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.tracing.perfetto.handshake)
+    implementation(libs.kotlinx.serialization.json)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
-    implementation(libs.retrofit2)
-    implementation(libs.okhttp)
-    implementation(libs.retrofit2.converter.kotlinx.serialization)
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.okhttp.logging)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

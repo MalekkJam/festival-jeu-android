@@ -16,14 +16,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             FestivalJeuMobileTheme {
- //               AppNavHost()
- //         }
- //     }
- // }
-//}
-                val authViewModel : AuthViewModel = viewModel()
+                AppNavHost()
+         }
+     }
+ }
+}
+  /*              val authViewModel : AuthViewModel = viewModel()
                 AuthScreen({}, authViewModel);
             }
         }
     }
-}
+}*/

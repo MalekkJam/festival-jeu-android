@@ -10,11 +10,10 @@ kotlin = "2.0.21"
 composeBom = "2024.09.00"
 nav3Core = "1.0.0"
 lifecycleViewmodelNav3 = "2.10.0"
-kotlinSerialization = "2.2.21"
 kotlinxSerializationCore = "1.9.0"
 tracingPerfettoHandshake = "1.0.1"
 retrofit = "3.0.0"
-kotlinx-serialization = "1.10.0"
+kotlinxSerialization = "1.10.0"
 okhttp = "4.12.0"
 
 [libraries]
@@ -37,23 +36,15 @@ androidx-compose-material3 = { group = "androidx.compose.material3", name = "mat
 androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "nav3Core" }
 androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "nav3Core" }
 androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycleViewmodelNav3" }
-kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinxSerializationCore" }
-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
-
-[plugins]
-android-application = { id = "com.android.application", version.ref = "agp" }
-kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-jetbrains-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinSerialization" }
 androidx-tracing-perfetto-handshake = { group = "androidx.tracing", name = "tracing-perfetto-handshake", version.ref = "tracingPerfettoHandshake" }
+kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinxSerializationCore" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 retrofit2 = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 retrofit2-converter-kotlinx-serialization = { group = "com.squareup.retrofit2", name = "converter-kotlinx-serialization", version.ref = "retrofit" }
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
-retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
-retrofit2-kotlinx-serialization-converter = { group = "com.jakewharton.retrofit2", name = "retrofit2-kotlinx-serialization-converter", version = "1.0.0" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "1.9.22" }
-
+jetbrains-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
