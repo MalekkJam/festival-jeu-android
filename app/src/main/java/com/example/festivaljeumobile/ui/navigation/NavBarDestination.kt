@@ -17,5 +17,6 @@ enum class NavBarDestination(
     BENEVOLES(Benevoles, "Bénévoles", Icons.Default.People),
     EDITEURS(Editeurs, "Éditeurs", Icons.Default.Business),
     RESERVANTS(Reservants, "Réservants", Icons.Default.Person),
-    ADMIN(Admin, "Admin", Icons.Default.AdminPanelSettings, adminOnly = true)
+    ADMIN(Admin, "Admin", Icons.Default.AdminPanelSettings, adminOnly = true),
+    LOGOUT(Logout, "Logout", Icons.Default.Logout)
 }

@@ -11,3 +11,4 @@ import kotlinx.serialization.Serializable
 @Serializable object Editeurs : NavKey
 @Serializable object Reservants : NavKey
 @Serializable object Admin : NavKey
+@Serializable object Logout : NavKey

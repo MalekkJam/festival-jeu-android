@@ -87,6 +87,7 @@ fun AppNavHost(isAdmin: Boolean = false) {
                     entry<Editeurs> { Text("Éditeurs") }
                     entry<Reservants> { Text("Réservants") }
                     entry<Admin> { Text("Admin") }
+                    entry <Logout> { Text("Logout") }
                 }
             )
         }
