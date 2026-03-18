@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import com.example.festivaljeumobile.ui.navigation.AppNavHost
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.festivaljeumobile.ui.screens.auth.AuthScreen
 import com.example.festivaljeumobile.ui.theme.FestivalJeuMobileTheme
@@ -15,6 +16,11 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             FestivalJeuMobileTheme {
+ //               AppNavHost()
+ //         }
+ //     }
+ // }
+//}
                 val authViewModel : AuthViewModel = viewModel()
                 AuthScreen({}, authViewModel);
             }
