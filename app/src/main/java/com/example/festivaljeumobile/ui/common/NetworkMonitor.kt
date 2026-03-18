@@ -1,4 +1,4 @@
-package com.example.festivaldujeu.ui.common
+package com.example.festivaljeumobile.ui.common
 
 import android.content.Context
 import android.net.ConnectivityManager

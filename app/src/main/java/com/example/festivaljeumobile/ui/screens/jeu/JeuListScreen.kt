@@ -1,4 +1,4 @@
-package com.example.festivaldujeu.ui.screens.jeu
+package com.example.festivaljeumobile.ui.screens.jeu
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,7 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.festivaldujeu.ui.screens.jeu.components.JeuCard
+import com.example.festivaljeumobile.ui.screens.jeu.components.JeuCard
 
 /**
  * Écran liste des jeux (JeuList destination)

@@ -1,8 +1,8 @@
-package com.example.festivaldujeu.di
+package com.example.festivaljeumobile.di
 
 import android.content.Context
-import com.example.festivaldujeu.data.local.AppDatabase
-import com.example.festivaldujeu.data.local.dao.JeuDao
+import com.example.festivaljeumobile.data.local.AppDatabase
+import com.example.festivaljeumobile.data.local.dao.JeuDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

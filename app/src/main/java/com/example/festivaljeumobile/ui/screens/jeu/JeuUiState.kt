@@ -1,6 +1,6 @@
-package com.example.festivaldujeu.ui.screens.jeu
+package com.example.festivaljeumobile.ui.screens.jeu
 
-import com.example.festivaldujeu.domain.model.Jeu
+import com.example.festivaljeumobile.domain.model.Jeu
 
 /**
  * UiState pour la liste des jeux

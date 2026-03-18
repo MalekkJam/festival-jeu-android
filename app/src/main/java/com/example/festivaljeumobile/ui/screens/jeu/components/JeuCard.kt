@@ -1,4 +1,4 @@
-package com.example.festivaldujeu.ui.screens.jeu.components
+package com.example.festivaljeumobile.ui.screens.jeu.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -20,7 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.overflow.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.festivaldujeu.domain.model.Jeu
+import com.example.festivaljeumobile.domain.model.Jeu
 
 /**
  * Card réutilisable pour afficher un jeu

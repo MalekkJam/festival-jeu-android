@@ -1,4 +1,4 @@
-package com.example.festivaldujeu.data.remote.dto
+package com.example.festivaljeumobile.data.remote.dto
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

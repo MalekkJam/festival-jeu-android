@@ -1,8 +1,8 @@
-package com.example.festivaldujeu.data.mapper
+package com.example.festivaljeumobile.data.mapper
 
-import com.example.festivaldujeu.data.local.entity.JeuEntity
-import com.example.festivaldujeu.data.remote.dto.JeuDto
-import com.example.festivaldujeu.domain.model.Jeu
+import com.example.festivaljeumobile.data.local.entity.JeuEntity
+import com.example.festivaljeumobile.data.remote.dto.JeuDto
+import com.example.festivaljeumobile.domain.model.Jeu
 
 /**
  * Mappeurs pour convertir entre les couches (Domain ← → Data)

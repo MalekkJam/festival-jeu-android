@@ -1,12 +1,12 @@
-package com.example.festivaldujeu.data.repository
+package com.example.festivaljeumobile.data.repository
 
-import com.example.festivaldujeu.data.local.dao.JeuDao
-import com.example.festivaldujeu.data.mapper.toDomain
-import com.example.festivaldujeu.data.mapper.toDto
-import com.example.festivaldujeu.data.mapper.toEntity
-import com.example.festivaldujeu.data.remote.api.JeuApi
-import com.example.festivaldujeu.domain.model.Jeu
-import com.example.festivaldujeu.domain.repository.JeuRepository
+import com.example.festivaljeumobile.data.local.dao.JeuDao
+import com.example.festivaljeumobile.data.mapper.toDomain
+import com.example.festivaljeumobile.data.mapper.toDto
+import com.example.festivaljeumobile.data.mapper.toEntity
+import com.example.festivaljeumobile.data.remote.api.JeuApi
+import com.example.festivaljeumobile.domain.model.Jeu
+import com.example.festivaljeumobile.domain.repository.JeuRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject

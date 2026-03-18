@@ -1,9 +1,9 @@
-package com.example.festivaldujeu.ui.screens.jeu
+package com.example.festivaljeumobile.ui.screens.jeu
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.festivaldujeu.domain.model.Jeu
-import com.example.festivaldujeu.domain.repository.JeuRepository
+import com.example.festivaljeumobile.domain.model.Jeu
+import com.example.festivaljeumobile.domain.repository.JeuRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -1,4 +1,4 @@
-package com.example.festivaldujeu.domain.model
+package com.example.festivaljeumobile.domain.model
 
 /**
  * Entité métier Jeu (pure, sans annotations Room/Retrofit)

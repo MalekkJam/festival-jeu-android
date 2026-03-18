@@ -1,10 +1,10 @@
-package com.example.festivaldujeu.data.remote.api
+package com.example.festivaljeumobile.data.remote.api
 
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
-import com.example.festivaldujeu.data.remote.dto.EditeurDto
-import com.example.festivaldujeu.data.remote.dto.TypeJeuDto
+import com.example.festivaljeumobile.data.remote.dto.EditeurDto
+import com.example.festivaljeumobile.data.remote.dto.TypeJeuDto
 
 /**
  * Interface Retrofit pour les endpoints "Éditeurs"

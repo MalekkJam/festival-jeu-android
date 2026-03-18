@@ -1,9 +1,9 @@
-package com.example.festivaldujeu.di
+package com.example.festivaljeumobile.di
 
-import com.example.festivaldujeu.data.local.dao.JeuDao
-import com.example.festivaldujeu.data.remote.api.JeuApi
-import com.example.festivaldujeu.data.repository.JeuRepositoryImpl
-import com.example.festivaldujeu.domain.repository.JeuRepository
+import com.example.festivaljeumobile.data.local.dao.JeuDao
+import com.example.festivaljeumobile.data.remote.api.JeuApi
+import com.example.festivaljeumobile.data.repository.JeuRepositoryImpl
+import com.example.festivaljeumobile.domain.repository.JeuRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

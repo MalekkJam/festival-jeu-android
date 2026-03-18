@@ -1,11 +1,11 @@
-package com.example.festivaldujeu.data.local
+package com.example.festivaljeumobile.data.local
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.festivaldujeu.data.local.dao.JeuDao
-import com.example.festivaldujeu.data.local.entity.JeuEntity
+import com.example.festivaljeumobile.data.local.dao.JeuDao
+import com.example.festivaljeumobile.data.local.entity.JeuEntity
 
 /**
  * AppDatabase singleton Room

@@ -1,10 +1,10 @@
-package com.example.festivaldujeu.ui.navigation
+package com.example.festivaljeumobile.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableListOf
 import androidx.compose.runtime.remember
-import com.example.festivaldujeu.ui.screens.jeu.JeuFormScreen
-import com.example.festivaldujeu.ui.screens.jeu.JeuListScreen
+import com.example.festivaljeumobile.ui.screens.jeu.JeuFormScreen
+import com.example.festivaljeumobile.ui.screens.jeu.JeuListScreen
 
 /**
  * Navigation Graph pour l'application

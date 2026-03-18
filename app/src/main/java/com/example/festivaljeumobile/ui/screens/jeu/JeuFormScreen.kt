@@ -1,4 +1,4 @@
-package com.example.festivaldujeu.ui.screens.jeu
+package com.example.festivaljeumobile.ui.screens.jeu
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -39,7 +39,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
-import com.example.festivaldujeu.domain.model.Jeu
+import com.example.festivaljeumobile.domain.model.Jeu
 
 /**
  * Écran formulaire pour créer/éditer un jeu

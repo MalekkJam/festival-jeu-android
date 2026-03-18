@@ -1,6 +1,6 @@
-package com.example.festivaldujeu.data.remote.api
+package com.example.festivaljeumobile.data.remote.api
 
-import com.example.festivaldujeu.data.remote.dto.JeuDto
+import com.example.festivaljeumobile.data.remote.dto.JeuDto
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST

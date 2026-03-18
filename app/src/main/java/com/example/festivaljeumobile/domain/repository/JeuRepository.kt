@@ -1,6 +1,6 @@
-package com.example.festivaldujeu.domain.repository
+package com.example.festivaljeumobile.domain.repository
 
-import com.example.festivaldujeu.domain.model.Jeu
+import com.example.festivaljeumobile.domain.model.Jeu
 import kotlinx.coroutines.flow.Flow
 
 /**
