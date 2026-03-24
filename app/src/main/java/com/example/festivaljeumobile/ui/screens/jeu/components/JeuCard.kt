@@ -1,7 +1,6 @@
 package com.example.festivaljeumobile.ui.screens.jeu.components
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,14 +17,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.overflow.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.festivaljeumobile.domain.model.Jeu
 
 /**
  * Card réutilisable pour afficher un jeu
- * Pattern : Composable pur, aucune logique métier
- * Responsabilités : affichage uniquement
+ * Composable pur, aucune logique métier
  */
 @Composable
 fun JeuCard(
@@ -51,7 +48,6 @@ fun JeuCard(
                 text = jeu.libelleJeu,
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 8.dp)
@@ -62,8 +58,7 @@ fun JeuCard(
                 Text(
                     text = "Auteur: $it",
                     style = MaterialTheme.typography.bodySmall,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    maxLines = 1
                 )
             }
 
@@ -72,59 +67,32 @@ fun JeuCard(
                 Text(
                     text = "Thème: $it",
                     style = MaterialTheme.typography.bodySmall,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    maxLines = 1
                 )
             }
 
             // Joueurs
-            if (jeu.nbMinJoueurJeu != null || jeu.nbMaxJoueurJeu != null) {
+            if (jeu.nbMinJoueurJeu != null && jeu.nbMaxJoueurJeu != null) {
                 Text(
-                    text = "Joueurs: ${jeu.nbMinJoueurJeu ?: "?"}-${jeu.nbMaxJoueurJeu ?: "?"}",
-                    style = MaterialTheme.typography.bodySmall
+                    text = "Joueurs: ${jeu.nbMinJoueurJeu}-${jeu.nbMaxJoueurJeu}",
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 4.dp)
                 )
             }
 
-            // Âge minimum
-            jeu.agemini?.let {
-                Text(
-                    text = "Âge: à partir de $it ans",
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-
-            // Actions en bas (Edit/Delete)
+            // Actions
             if (showActions) {
-                Box(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 8.dp)
+                        .padding(top = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier.align(Alignment.BottomEnd)
-                    ) {
-                        IconButton(
-                            onClick = onEditClick,
-                            modifier = Modifier.padding(0.dp)
-                        ) {
-                            Icon(
-                                Icons.Filled.Edit,
-                                contentDescription = "Modifier",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(4.dp)
-                            )
-                        }
-                        IconButton(
-                            onClick = onDeleteClick,
-                            modifier = Modifier.padding(0.dp)
-                        ) {
-                            Icon(
-                                Icons.Filled.Delete,
-                                contentDescription = "Supprimer",
-                                tint = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.padding(4.dp)
-                            )
-                        }
+                    IconButton(onClick = onEditClick) {
+                        Icon(Icons.Filled.Edit, contentDescription = "Modifier")
+                    }
+                    IconButton(onClick = onDeleteClick) {
+                        Icon(Icons.Filled.Delete, contentDescription = "Supprimer")
                     }
                 }
             }

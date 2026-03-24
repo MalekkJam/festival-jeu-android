@@ -4,19 +4,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.festivaljeumobile.domain.model.Jeu
 import com.example.festivaljeumobile.domain.repository.JeuRepository
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 /**
  * ViewModel pour le détail d'un jeu et la gestion des actions (add/update)
  */
-@HiltViewModel
-class JeuFormViewModel @Inject constructor(
+class JeuFormViewModel(
     private val jeuRepository: JeuRepository
 ) : ViewModel() {
 
@@ -100,4 +97,18 @@ class JeuFormViewModel @Inject constructor(
     fun resetActionState() {
         _actionUiState.value = JeuActionUiState.Idle
     }
+}
+
+sealed class JeuDetailUiState {
+    data object Loading : JeuDetailUiState()
+    data class Success(val jeu: Jeu) : JeuDetailUiState()
+    data class Error(val message: String) : JeuDetailUiState()
+    data object NotFound : JeuDetailUiState()
+}
+
+sealed class JeuActionUiState {
+    data object Idle : JeuActionUiState()
+    data object Loading : JeuActionUiState()
+    data class Success(val message: String) : JeuActionUiState()
+    data class Error(val message: String) : JeuActionUiState()
 }

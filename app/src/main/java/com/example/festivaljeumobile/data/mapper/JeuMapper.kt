@@ -1,12 +1,11 @@
 package com.example.festivaljeumobile.data.mapper
 
-import com.example.festivaljeumobile.data.local.entity.JeuEntity
 import com.example.festivaljeumobile.data.remote.dto.JeuDto
 import com.example.festivaljeumobile.domain.model.Jeu
 
 /**
- * Mappeurs pour convertir entre les couches (Domain ← → Data)
- * Évite de mélanger les dépendances
+ * Mappeurs pour convertir entre les DTOs Retrofit et le modèle Domain
+ * Version simplifiée sans Room (pas d'Entity)
  */
 
 // DTO (Retrofit) → Domain
@@ -47,46 +46,6 @@ fun Jeu.toDto(): JeuDto = JeuDto(
     videoRegle = videoRegle
 )
 
-// Entity (Room) → Domain
-fun JeuEntity.toDomain(): Jeu = Jeu(
-    idJeu = idJeu,
-    libelleJeu = libelleJeu,
-    auteurJeu = auteurJeu,
-    nbMinJoueurJeu = nbMinJoueurJeu,
-    nbMaxJoueurJeu = nbMaxJoueurJeu,
-    noticeJeu = noticeJeu,
-    idEditeur = idEditeur,
-    idTypeJeu = idTypeJeu,
-    agemini = agemini,
-    prototype = prototype,
-    duree = duree,
-    theme = theme,
-    description = description,
-    imageJeu = imageJeu,
-    videoRegle = videoRegle
-)
-
-// Domain → Entity (Room)
-fun Jeu.toEntity(): JeuEntity = JeuEntity(
-    idJeu = idJeu,
-    libelleJeu = libelleJeu,
-    auteurJeu = auteurJeu,
-    nbMinJoueurJeu = nbMinJoueurJeu,
-    nbMaxJoueurJeu = nbMaxJoueurJeu,
-    noticeJeu = noticeJeu,
-    idEditeur = idEditeur,
-    idTypeJeu = idTypeJeu,
-    agemini = agemini,
-    prototype = prototype,
-    duree = duree,
-    theme = theme,
-    description = description,
-    imageJeu = imageJeu,
-    videoRegle = videoRegle
-)
-
-// List<Entity> → List<Domain>
-fun List<JeuEntity>.toDomain(): List<Jeu> = map { it.toDomain() }
-
-// List<DTO> → List<Domain>
+// List extensions
 fun List<JeuDto>.toDomain(): List<Jeu> = map { it.toDomain() }
+fun List<Jeu>.toDto(): List<JeuDto> = map { it.toDto() }

@@ -4,60 +4,42 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.festivaljeumobile.domain.model.Jeu
 import com.example.festivaljeumobile.domain.repository.JeuRepository
-import com.example.festivaljeumobile.ui.common.NetworkMonitor
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 /**
  * ViewModel pour la liste des jeux
- * Respecte MVVM strict - aucune logique métier, uniquement orchestration
- * Expose un UiState observable via StateFlow
- * Dépend uniquement d'interfaces (JeuRepository, NetworkMonitor) - DIP
+ * Respecte MVVM strict - aucune logique métier, orchestration uniquement
  */
-@HiltViewModel
-class JeuListViewModel @Inject constructor(
-    private val jeuRepository: JeuRepository,
-    private val networkMonitor: NetworkMonitor
+class JeuListViewModel(
+    private val jeuRepository: JeuRepository
 ) : ViewModel() {
 
-    // State privé (mutation interne)
     private val _uiState = MutableStateFlow(JeuListUiState())
-    
-    // State public (observable)
     val uiState: StateFlow<JeuListUiState> = _uiState.asStateFlow()
 
     init {
-        // Combine les flux : jeux du repo + état réseau
+        loadJeux()
+    }
+
+    /**
+     * Charge les jeux depuis le repository
+     */
+    fun loadJeux() {
         viewModelScope.launch {
-            combine(
-                jeuRepository.getAllJeux(),
-                networkMonitor.isOnline,
-                _uiState.map { it.searchQuery },
-                _uiState.map { it.sortField },
-                _uiState.map { it.sortDirection }
-            ) { jeux, isOnline, _, _, _ ->
-                _uiState.update { current ->
-                    current.copy(
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            jeuRepository.getAllJeux().collect { jeux ->
+                _uiState.update {
+                    it.copy(
                         jeux = jeux,
-                        isOffline = !isOnline,
                         isLoading = false
                     )
                 }
-            }.collect()
+            }
         }
-
-        // Rafraîchissement initial
-        refresh()
     }
 
     /**
@@ -67,11 +49,11 @@ class JeuListViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             jeuRepository.refreshJeux()
+                .onSuccess {
+                    loadJeux()
+                }
                 .onFailure { e ->
                     _uiState.update { it.copy(error = e.message, isLoading = false) }
-                }
-                .onSuccess {
-                    _uiState.update { it.copy(isLoading = false) }
                 }
         }
     }
@@ -102,7 +84,7 @@ class JeuListViewModel @Inject constructor(
     }
 
     /**
-     * Supprime un jeu (déclenche navigation dans l'UI)
+     * Supprime un jeu
      */
     fun deleteJeu(idJeu: Int, libelleJeu: String) {
         viewModelScope.launch {
@@ -112,4 +94,56 @@ class JeuListViewModel @Inject constructor(
                 }
         }
     }
+}
+
+/**
+ * État UI pour la liste des jeux
+ */
+data class JeuListUiState(
+    val jeux: List<Jeu> = emptyList(),
+    val searchQuery: String = "",
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val sortField: JeuSortField = JeuSortField.NAME,
+    val sortDirection: SortDirection = SortDirection.ASC
+) {
+    /**
+     * Retourne les jeux filtrés et triés
+     */
+    val filteredJeux: List<Jeu>
+        get() {
+            var filtered = jeux
+            
+            // Filtre par recherche
+            if (searchQuery.isNotEmpty()) {
+                val query = searchQuery.lowercase()
+                filtered = filtered.filter { jeu ->
+                    jeu.libelleJeu.lowercase().contains(query) ||
+                            (jeu.auteurJeu?.lowercase()?.contains(query) ?: false) ||
+                            (jeu.theme?.lowercase()?.contains(query) ?: false) ||
+                            (jeu.description?.lowercase()?.contains(query) ?: false)
+                }
+            }
+
+            // Tri
+            filtered = when (sortField) {
+                JeuSortField.NAME -> filtered.sortedBy { it.libelleJeu }
+                JeuSortField.AUTHOR -> filtered.sortedBy { it.auteurJeu }
+                JeuSortField.DATE -> filtered.sortedBy { it.idJeu }
+            }
+
+            if (sortDirection == SortDirection.DESC) {
+                filtered = filtered.reversed()
+            }
+
+            return filtered
+        }
+}
+
+enum class JeuSortField {
+    NAME, AUTHOR, DATE
+}
+
+enum class SortDirection {
+    ASC, DESC
 }

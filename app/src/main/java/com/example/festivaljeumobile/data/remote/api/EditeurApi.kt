@@ -3,6 +3,7 @@ package com.example.festivaljeumobile.data.remote.api
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 import com.example.festivaljeumobile.data.remote.dto.EditeurDto
 import com.example.festivaljeumobile.data.remote.dto.TypeJeuDto
 
@@ -15,7 +16,7 @@ interface EditeurApi {
     suspend fun getAllEditeurs(): List<EditeurDto>
 
     @GET("/api/editeurs/{id}")
-    suspend fun getEditeurById(@Query id: Int): EditeurDto?
+    suspend fun getEditeurById(@Path("id") id: Int): EditeurDto?
 }
 
 /**

@@ -22,6 +22,9 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import kotlinx.coroutines.launch
+import com.example.festivaljeumobile.di.ServiceLocator
+import com.example.festivaljeumobile.ui.screens.jeu.JeuListScreen
+import com.example.festivaljeumobile.ui.screens.jeu.JeuFormScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,7 +84,40 @@ fun AppNavHost(isAdmin: Boolean = false) {
                 entryProvider = entryProvider {
                     entry<Login> { Text("Login") }
                     entry<Festivals> { Text("Festivals") }
-                    entry<Jeux> { Text("Jeux") }
+                    entry<Jeux> {
+                        JeuListScreen(
+                            viewModel = ServiceLocator.createJeuListViewModel(),
+                            onJeuClick = { jeuId ->
+                                // À implémenter si JeuDetailScreen existe
+                            },
+                            onAddJeuClick = {
+                                backStack.add(JeuForm)
+                            },
+                            onEditJeuClick = { jeuId ->
+                                backStack.add(JeuEditForm(jeuId))
+                            }
+                        )
+                    }
+                    entry<JeuForm> {
+                        JeuFormScreen(
+                            viewModel = ServiceLocator.createJeuFormViewModel(),
+                            onNavigateBack = { backStack.removeLastOrNull() },
+                            onSuccessNavigateBack = {
+                                backStack.removeLastOrNull()
+                                backStack.add(Jeux)
+                            }
+                        )
+                    }
+                    entry<JeuEditForm> { jeuEditForm ->
+                        JeuFormScreen(
+                            jeuId = jeuEditForm.jeuId,
+                            viewModel = ServiceLocator.createJeuFormViewModel(),
+                            onNavigateBack = { backStack.removeLastOrNull() },
+                            onSuccessNavigateBack = {
+                                backStack.removeLastOrNull()
+                            }
+                        )
+                    }
                     entry<Reservations> { Text("Réservations") }
                     entry<Benevoles> { Text("Bénévoles") }
                     entry<Editeurs> { Text("Éditeurs") }

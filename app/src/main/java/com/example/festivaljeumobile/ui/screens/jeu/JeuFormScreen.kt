@@ -1,14 +1,9 @@
 package com.example.festivaljeumobile.ui.screens.jeu
 
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -22,74 +17,57 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.coerceIn
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.rememberAsyncImagePainter
 import com.example.festivaljeumobile.domain.model.Jeu
 
 /**
  * Écran formulaire pour créer/éditer un jeu
- * Pattern MVVM strict : aucune logique métier, uniquement orchestration UI
+ * Composable pur, injection manuelle du viewModel
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JeuFormScreen(
     jeuId: Int? = null,
-    viewModel: JeuFormViewModel = hiltViewModel(),
+    viewModel: JeuFormViewModel,
     onNavigateBack: () -> Unit = {},
     onSuccessNavigateBack: () -> Unit = {}
 ) {
     val detailState = viewModel.detailUiState.collectAsState()
     val actionState = viewModel.actionUiState.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
 
-    // Champs du formulaire (mutable state)
+    // Champs du formulaire
     val libelle = remember { mutableStateOf("") }
     val auteur = remember { mutableStateOf("") }
     val nbMinJoueur = remember { mutableIntStateOf(0) }
     val nbMaxJoueur = remember { mutableIntStateOf(0) }
-    val notice = remember { mutableStateOf("") }
-    val agemini = remember { mutableIntStateOf(0) }
-    val prototype = remember { mutableStateOf(false) }
-    val duree = remember { mutableIntStateOf(0) }
     val theme = remember { mutableStateOf("") }
     val description = remember { mutableStateOf("") }
-    val imageUri = remember { mutableStateOf<Uri?>(null) }
-    val videoRegle = remember { mutableStateOf("") }
-    val idEditeur = remember { mutableIntStateOf(0) }
-    val idTypeJeu = remember { mutableIntStateOf(0) }
-
-    // Gestion des actions (feedback utilisateur)
-    when (val state = actionState.value) {
-        is JeuActionUiState.Success -> {
-            // TODO: Afficher snackbar et naviguer
-            onSuccessNavigateBack()
-        }
-
-        is JeuActionUiState.Error -> {
-            // TODO: Afficher snackbar d'erreur
-        }
-
-        else -> {}
-    }
+    val duree = remember { mutableIntStateOf(0) }
+    val agemini = remember { mutableIntStateOf(0) }
 
     // Charger le jeu au montage si édition
-    if (jeuId != null) {
-        remember { viewModel.loadJeu(jeuId) }
+    LaunchedEffect(jeuId) {
+        if (jeuId != null) {
+            viewModel.loadJeu(jeuId)
+        }
+    }
+
+    // Gestion du succès d'une action
+    when (actionState.value) {
+        is JeuActionUiState.Success -> {
+            onSuccessNavigateBack()
+        }
+        else -> {}
     }
 
     Scaffold(
@@ -102,73 +80,62 @@ fun JeuFormScreen(
                     }
                 }
             )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        }
     ) { paddingValues ->
-        when (val detailState = detailState.value) {
+        when (val state = detailState.value) {
             JeuDetailUiState.Loading -> {
-                Box(
+                Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues),
-                    contentAlignment = Alignment.Center
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
                     CircularProgressIndicator()
                 }
             }
 
             is JeuDetailUiState.Success -> {
-                val jeu = detailState.jeu
-                // Remplir les champs avec les données du jeu
+                val jeu = state.jeu
+                // Remplir les champs
                 libelle.value = jeu.libelleJeu
                 auteur.value = jeu.auteurJeu ?: ""
                 nbMinJoueur.intValue = jeu.nbMinJoueurJeu ?: 0
                 nbMaxJoueur.intValue = jeu.nbMaxJoueurJeu ?: 0
-                notice.value = jeu.noticeJeu ?: ""
-                agemini.intValue = jeu.agemini ?: 0
-                prototype.value = jeu.prototype ?: false
-                duree.intValue = jeu.duree ?: 0
                 theme.value = jeu.theme ?: ""
                 description.value = jeu.description ?: ""
-                videoRegle.value = jeu.videoRegle ?: ""
-                idEditeur.intValue = jeu.idEditeur ?: 0
-                idTypeJeu.intValue = jeu.idTypeJeu ?: 0
+                duree.intValue = jeu.duree ?: 0
+                agemini.intValue = jeu.agemini ?: 0
 
-                JeuFormContent(
+                FormContent(
                     libelle = libelle.value,
-                    onLabelleChange = { libelle.value = it },
+                    onLibelleChange = { libelle.value = it },
                     auteur = auteur.value,
                     onAuteurChange = { auteur.value = it },
-                    nbMinJoueur = nbMinJoueur.intValue,
-                    onNbMinJoueurChange = { nbMinJoueur.intValue = it.coerceIn(0, 99) },
-                    nbMaxJoueur = nbMaxJoueur.intValue,
-                    onNbMaxJoueurChange = { nbMaxJoueur.intValue = it.coerceIn(0, 99) },
-                    notice = notice.value,
-                    onNoticeChange = { notice.value = it },
-                    agemini = agemini.intValue,
-                    onAgeMiniChange = { agemini.intValue = it.coerceIn(0, 99) },
+                    nbMinJoueur = nbMinJoueur.intValue.toString(),
+                    onNbMinJoueurChange = { nbMinJoueur.intValue = it.toIntOrNull() ?: 0 },
+                    nbMaxJoueur = nbMaxJoueur.intValue.toString(),
+                    onNbMaxJoueurChange = { nbMaxJoueur.intValue = it.toIntOrNull() ?: 0 },
                     theme = theme.value,
                     onThemeChange = { theme.value = it },
                     description = description.value,
                     onDescriptionChange = { description.value = it },
-                    videoRegle = videoRegle.value,
-                    onVideoRegleChange = { videoRegle.value = it },
-                    imageUri = imageUri.value,
-                    onImageSelected = { imageUri.value = it },
-                    actionState = actionState.value,
+                    duree = duree.intValue.toString(),
+                    onDureeChange = { duree.intValue = it.toIntOrNull() ?: 0 },
+                    agemini = agemini.intValue.toString(),
+                    onAgeMiniChange = { agemini.intValue = it.toIntOrNull() ?: 0 },
+                    isLoading = actionState.value is JeuActionUiState.Loading,
+                    error = (actionState.value as? JeuActionUiState.Error)?.message,
                     onSubmit = {
                         val updatedJeu = jeu.copy(
                             libelleJeu = libelle.value,
                             auteurJeu = auteur.value,
                             nbMinJoueurJeu = nbMinJoueur.intValue,
                             nbMaxJoueurJeu = nbMaxJoueur.intValue,
-                            noticeJeu = notice.value,
-                            agemini = agemini.intValue,
-                            prototype = prototype.value,
-                            duree = duree.intValue,
                             theme = theme.value,
                             description = description.value,
-                            videoRegle = videoRegle.value
+                            duree = duree.intValue,
+                            agemini = agemini.intValue
                         )
                         viewModel.updateJeu(updatedJeu)
                     },
@@ -178,24 +145,26 @@ fun JeuFormScreen(
             }
 
             JeuDetailUiState.NotFound -> {
-                Box(
+                Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues),
-                    contentAlignment = Alignment.Center
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
                     Text("Jeu non trouvé")
                 }
             }
 
             is JeuDetailUiState.Error -> {
-                Box(
+                Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues),
-                    contentAlignment = Alignment.Center
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    Text("Erreur : ${detailState.message}")
+                    Text("Erreur: ${state.message}")
                 }
             }
         }
@@ -203,41 +172,32 @@ fun JeuFormScreen(
 }
 
 /**
- * Contenu du formulaire (réutilisable)
+ * Contenu du formulaire réutilisable
  */
 @Composable
-fun JeuFormContent(
+fun FormContent(
     libelle: String,
-    onLabelleChange: (String) -> Unit,
+    onLibelleChange: (String) -> Unit,
     auteur: String,
     onAuteurChange: (String) -> Unit,
-    nbMinJoueur: Int,
-    onNbMinJoueurChange: (Int) -> Unit,
-    nbMaxJoueur: Int,
-    onNbMaxJoueurChange: (Int) -> Unit,
-    notice: String,
-    onNoticeChange: (String) -> Unit,
-    agemini: Int,
-    onAgeMiniChange: (Int) -> Unit,
+    nbMinJoueur: String,
+    onNbMinJoueurChange: (String) -> Unit,
+    nbMaxJoueur: String,
+    onNbMaxJoueurChange: (String) -> Unit,
     theme: String,
     onThemeChange: (String) -> Unit,
     description: String,
     onDescriptionChange: (String) -> Unit,
-    videoRegle: String,
-    onVideoRegleChange: (String) -> Unit,
-    imageUri: Uri?,
-    onImageSelected: (Uri?) -> Unit,
-    actionState: JeuActionUiState,
+    duree: String,
+    onDureeChange: (String) -> Unit,
+    agemini: String,
+    onAgeMiniChange: (String) -> Unit,
+    isLoading: Boolean,
+    error: String?,
     onSubmit: () -> Unit,
     onCancel: () -> Unit,
     paddingValues: androidx.compose.foundation.layout.PaddingValues
 ) {
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        onImageSelected(uri)
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -245,171 +205,119 @@ fun JeuFormContent(
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        // Champ Libellé (obligatoire)
+        // Libellé
         OutlinedTextField(
             value = libelle,
-            onValueChange = onLabelleChange,
-            label = { Text("Libellé du jeu*") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            onValueChange = onLibelleChange,
+            label = { Text("Libellé *") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp)
         )
 
-        // Champ Auteur
+        // Auteur
         OutlinedTextField(
             value = auteur,
             onValueChange = onAuteurChange,
             label = { Text("Auteur") },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 12.dp),
-            singleLine = true
+                .padding(bottom = 12.dp)
         )
 
-        // Champ Nombre de joueurs min
+        // Nombre min joueurs
         OutlinedTextField(
-            value = nbMinJoueur.toString(),
-            onValueChange = { onNbMinJoueurChange(it.toIntOrNull() ?: 0) },
-            label = { Text("Nombre min de joueurs") },
+            value = nbMinJoueur,
+            onValueChange = onNbMinJoueurChange,
+            label = { Text("Min joueurs") },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 12.dp),
-            singleLine = true
+                .padding(bottom = 12.dp)
         )
 
-        // Champ Nombre de joueurs max
+        // Nombre max joueurs
         OutlinedTextField(
-            value = nbMaxJoueur.toString(),
-            onValueChange = { onNbMaxJoueurChange(it.toIntOrNull() ?: 0) },
-            label = { Text("Nombre max de joueurs") },
+            value = nbMaxJoueur,
+            onValueChange = onNbMaxJoueurChange,
+            label = { Text("Max joueurs") },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 12.dp),
-            singleLine = true
+                .padding(bottom = 12.dp)
         )
 
-        // Champ Âge minimum
-        OutlinedTextField(
-            value = agemini.toString(),
-            onValueChange = { onAgeMiniChange(it.toIntOrNull() ?: 0) },
-            label = { Text("Âge minimum") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp),
-            singleLine = true
-        )
-
-        // Champ Thème
+        // Thème
         OutlinedTextField(
             value = theme,
             onValueChange = onThemeChange,
             label = { Text("Thème") },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 12.dp),
-            singleLine = true
+                .padding(bottom = 12.dp)
         )
 
-        // Champ Description
+        // Durée
+        OutlinedTextField(
+            value = duree,
+            onValueChange = onDureeChange,
+            label = { Text("Durée (min)") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp)
+        )
+
+        // Âge minimum
+        OutlinedTextField(
+            value = agemini,
+            onValueChange = onAgeMiniChange,
+            label = { Text("Âge minimum") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp)
+        )
+
+        // Description
         OutlinedTextField(
             value = description,
             onValueChange = onDescriptionChange,
             label = { Text("Description") },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 12.dp),
+                .padding(bottom = 16.dp),
             minLines = 3
         )
 
-        // Champ Durée
-        OutlinedTextField(
-            value = nbMinJoueur.toString(),
-            onValueChange = { onNbMinJoueurChange(it.toIntOrNull() ?: 0) },
-            label = { Text("Durée (minutes)") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp),
-            singleLine = true
-        )
-
-        // Champ Règle vidéo
-        OutlinedTextField(
-            value = videoRegle,
-            onValueChange = onVideoRegleChange,
-            label = { Text("URL de la vidéo de règle") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp),
-            singleLine = true
-        )
-
-        // Sélecteur d'image
-        Button(
-            onClick = { launcher.launch("image/*") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp)
-        ) {
-            Text("Sélectionner une image")
-        }
-
-        // Aperçu d'image
-        imageUri?.let { uri ->
-            Box(
+        // Affichage erreur
+        error?.let {
+            Text(
+                it,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
-                    .padding(top = 12.dp)
-            ) {
-                Image(
-                    painter = rememberAsyncImagePainter(uri),
-                    contentDescription = "Aperçu",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            }
+                    .padding(bottom = 16.dp)
+            )
         }
 
-        // Indicateur d'action
-        when (actionState) {
-            JeuActionUiState.Loading -> {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .padding(top = 16.dp)
-                )
-            }
-
-            is JeuActionUiState.Error -> {
-                Text(
-                    text = "Erreur: ${actionState.message}",
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(top = 16.dp)
-                )
-            }
-
-            else -> {}
-        }
-
-        // Boutons d'action
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp)
-        ) {
+        // Boutons
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(16.dp)
+            )
+        } else {
             Button(
                 onClick = onSubmit,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-                enabled = actionState != JeuActionUiState.Loading && libelle.isNotEmpty()
+                    .padding(bottom = 8.dp)
             ) {
                 Text("Enregistrer")
             }
 
             Button(
                 onClick = onCancel,
-                modifier = Modifier.fillMaxWidth(),
-                enabled = actionState != JeuActionUiState.Loading
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Annuler")
             }

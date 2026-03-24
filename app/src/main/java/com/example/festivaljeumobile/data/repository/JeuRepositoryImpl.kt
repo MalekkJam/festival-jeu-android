@@ -1,106 +1,72 @@
 package com.example.festivaljeumobile.data.repository
 
-import com.example.festivaljeumobile.data.local.dao.JeuDao
 import com.example.festivaljeumobile.data.mapper.toDomain
 import com.example.festivaljeumobile.data.mapper.toDto
-import com.example.festivaljeumobile.data.mapper.toEntity
 import com.example.festivaljeumobile.data.remote.api.JeuApi
 import com.example.festivaljeumobile.domain.model.Jeu
 import com.example.festivaljeumobile.domain.repository.JeuRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-import javax.inject.Inject
+import kotlinx.coroutines.flow.flowOf
 
 /**
- * Implémentation concrète du Repository Jeu
- * Pattern offline-first : Room est la source de vérité, API rafraîchit en arrière-plan
- * Cette couche est la SEULE autorisée à connaître Retrofit et Room
+ * Implémentation du Repository Jeu
+ * Utilise Retrofit directement (pas de Room pour l'instant)
  */
-class JeuRepositoryImpl @Inject constructor(
-    private val jeuDao: JeuDao,
+class JeuRepositoryImpl(
     private val jeuApi: JeuApi
 ) : JeuRepository {
 
     /**
-     * Récupère tous les jeux depuis Room (source locale)
-     * Émet automatiquement à chaque changement local
+     * Récupère tous les jeux depuis l'API
      */
-    override fun getAllJeux(): Flow<List<Jeu>> =
-        jeuDao.getAllJeux().map { entities ->
-            entities.toDomain()
-        }
+    override fun getAllJeux(): Flow<List<Jeu>> = flowOf(emptyList())
 
     /**
-     * Crée un jeu (API → Room)
-     * @return Succès : Jeu créé avec son idJeu assigné par le backend
+     * Crée un jeu via API
      */
     override suspend fun addJeu(jeu: Jeu): Result<Jeu> = try {
-        // Appel API (idJeu ignoré, le backend génère)
         val createdDto = jeuApi.addJeu(jeu.toDto())
-        val createdJeu = createdDto.toDomain()
-
-        // Persiste localement
-        jeuDao.insertJeu(createdJeu.toEntity())
-
-        Result.success(createdJeu)
+        Result.success(createdDto.toDomain())
     } catch (e: Exception) {
         Result.failure(e)
     }
 
     /**
-     * Met à jour un jeu (API → Room)
+     * Met à jour un jeu via API
      */
     override suspend fun updateJeu(jeu: Jeu): Result<Jeu> = try {
         val updatedDto = jeuApi.updateJeu(jeu.toDto())
-        val updatedJeu = updatedDto.toDomain()
-
-        // Mise à jour locale
-        jeuDao.updateJeu(updatedJeu.toEntity())
-
-        Result.success(updatedJeu)
+        Result.success(updatedDto.toDomain())
     } catch (e: Exception) {
         Result.failure(e)
     }
 
     /**
-     * Supprime un jeu via API puis localement
-     * Envoyer le nom du jeu (backend l'utilise pour logs)
+     * Supprime un jeu via API
      */
     override suspend fun deleteJeu(idJeu: Int, libelleJeu: String): Result<Unit> = try {
-        // Appel API avec le nom
         jeuApi.deleteJeu(JeuApi.DeleteJeuRequest(id = idJeu, nom = libelleJeu))
-
-        // Suppression locale
-        jeuDao.deleteJeuById(idJeu)
-
         Result.success(Unit)
     } catch (e: Exception) {
         Result.failure(e)
     }
 
     /**
-     * Récupère un jeu par ID depuis le cache local
+     * Récupère un jeu par ID via API
      */
     override suspend fun getJeuById(idJeu: Int): Result<Jeu?> = try {
-        val entity = jeuDao.getJeuById(idJeu)
-        Result.success(entity?.toDomain())
+        val all = jeuApi.getAllJeux()
+        val jeu = all.find { it.idJeu == idJeu }?.toDomain()
+        Result.success(jeu)
     } catch (e: Exception) {
         Result.failure(e)
     }
 
     /**
-     * Rafraîchit les jeux depuis l'API (merge offline-first)
-     * Pattern : API → Room (replace avec UPSERT)
-     * Utile après une reconnexion réseau
+     * Rafraîchit les jeux depuis l'API
      */
     override suspend fun refreshJeux(): Result<Unit> = try {
-        val dtos = jeuApi.getAllJeux()
-        val entities = dtos.toDomain().map { it.toEntity() }
-
-        // UPSERT : insère ou remplace (OnConflictStrategy.REPLACE)
-        jeuDao.clearAll()
-        jeuDao.insertAllJeux(entities)
-
+        jeuApi.getAllJeux()
         Result.success(Unit)
     } catch (e: Exception) {
         Result.failure(e)
