@@ -1,12 +1,13 @@
 package com.example.festivaljeumobile.data.repository
 
+import android.util.Log
 import com.example.festivaljeumobile.data.mapper.toDomain
 import com.example.festivaljeumobile.data.mapper.toDto
 import com.example.festivaljeumobile.data.remote.api.JeuApi
 import com.example.festivaljeumobile.domain.model.Jeu
 import com.example.festivaljeumobile.domain.repository.JeuRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flow
 
 /**
  * Implémentation du Repository Jeu
@@ -19,7 +20,18 @@ class JeuRepositoryImpl(
     /**
      * Récupère tous les jeux depuis l'API
      */
-    override fun getAllJeux(): Flow<List<Jeu>> = flowOf(emptyList())
+    override fun getAllJeux(): Flow<List<Jeu>> = flow {
+        try {
+            Log.d("JeuRepository", "getAllJeux() called - appel API")
+            val dtos = jeuApi.getAllJeux()
+            Log.d("JeuRepository", "API response : ${dtos.size} jeux reçus")
+            val jeux = dtos.map { it.toDomain() }
+            emit(jeux)
+        } catch (e: Exception) {
+            Log.e("JeuRepository", "Error fetching jeux: ${e.message}", e)
+            emit(emptyList())
+        }
+    }
 
     /**
      * Crée un jeu via API

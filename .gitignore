@@ -5,6 +5,7 @@
 !/.idea/.gitignore
 /.idea/caches
 /.idea/libraries
+/.idea/misc.xml
 /.idea/modules.xml
 /.idea/workspace.xml
 /.idea/navEditor.xml
@@ -15,3 +16,5 @@
 .externalNativeBuild
 .cxx
 local.properties
+*.bat
+*.log

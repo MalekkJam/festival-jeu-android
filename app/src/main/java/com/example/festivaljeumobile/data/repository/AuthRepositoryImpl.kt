@@ -12,11 +12,18 @@ class AuthRepositoryImpl(
 
     override suspend fun login(login: String, password: String): Result<Unit> {
         return try {
-            Log.d("LOGIN", ("WE HERE IN THE LOGIN"));
+            Log.d("LOGIN", "Attempting login for user: $login")
             val response = authApi.login(LoginRequestDto(login, password))
-            if (response.isSuccessful) Result.success(Unit)
-            else Result.failure(Exception("Identifiants incorrects."))
+            Log.d("LOGIN", "Response code: ${response.code()}, body: ${response.body()}, error: ${response.errorBody()}")
+            if (response.isSuccessful && response.body() != null) {
+                Log.d("LOGIN", "Login successful, cookies set")
+                Result.success(Unit)
+            } else {
+                Log.e("LOGIN", "Login failed with status: ${response.code()}")
+                Result.failure(Exception("Identifiants incorrects."))
+            }
         } catch (e: Exception) {
+            Log.e("LOGIN", "Login error: ${e.message}", e)
             Result.failure(Exception("Erreur réseau."))
         }
     }
@@ -36,9 +43,17 @@ class AuthRepositoryImpl(
             val response = authApi.whoAmI()
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!
-                Result.success(User(id = body.id, role = body.role, login ="", password = null,prenom = null,nom = null))
-            } else Result.failure(Exception("Non authentifié."))
+                Result.success(User(
+                    id = body.user.id,
+                    login = body.user.login ?: "Unknown",
+                    role = body.user.role
+                ))
+            } else {
+                Log.e("WHOAMI", "whoAmI failed with status: ${response.code()}")
+                Result.failure(Exception("Non authentifié."))
+            }
         } catch (e: Exception) {
+            Log.e("WHOAMI", "whoAmI error: ${e.message}")
             Result.failure(Exception("Erreur réseau."))
         }
     }
