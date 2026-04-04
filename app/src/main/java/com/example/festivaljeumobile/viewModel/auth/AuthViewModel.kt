@@ -24,6 +24,7 @@ sealed class AuthUiState {
 
 sealed class AuthEvent {
     object NavigateToHome : AuthEvent()
+    object NavigateToLogin: AuthEvent()
 }
 
 class AuthViewModel(
@@ -67,9 +68,11 @@ class AuthViewModel(
             _uiState.value = AuthUiState.Loading
             authRepository.login(login, password).fold(
                 onSuccess = {
-                    Log.d("AuthViewModel", "Login success")
-                    _uiState.value = AuthUiState.Success
+
+                    _login.value = ""
+                    _password.value = ""
                     _events.send(AuthEvent.NavigateToHome)
+                    _uiState.value = AuthUiState.Idle
                 },
                 onFailure = { throwable ->
                     Log.e("AuthViewModel", "Login error: ${throwable.message}")
@@ -80,4 +83,22 @@ class AuthViewModel(
             )
         }
     }
-}
+
+    fun logout() {
+        _uiState.value = AuthUiState.Idle
+        _login.value = ""
+        _password.value = ""
+        viewModelScope.launch {
+            _uiState.value = AuthUiState.Idle
+            authRepository.logout().fold(
+                onSuccess = {
+                    _events.send(AuthEvent.NavigateToLogin)
+                },
+                onFailure = {
+                    // même en cas d'erreur on déconnecte localement
+                    _events.send(AuthEvent.NavigateToLogin)
+                }
+            )
+        }
+    }
+ }

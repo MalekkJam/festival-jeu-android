@@ -17,8 +17,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             FestivalJeuMobileTheme {
                 AppNavHost()
-                //val authViewModel : AuthViewModel = viewModel()
-                //AuthScreen({}, authViewModel);
          }
      }
  }

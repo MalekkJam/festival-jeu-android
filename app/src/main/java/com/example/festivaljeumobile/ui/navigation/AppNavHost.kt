@@ -15,23 +15,46 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import com.example.festivaljeumobile.ui.screens.auth.AuthScreen
+import com.example.festivaljeumobile.viewModel.auth.AuthEvent
+import com.example.festivaljeumobile.viewModel.auth.AuthViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavHost(isAdmin: Boolean = false) {
-    val backStack = rememberNavBackStack(Festivals)
+    val backStack = rememberNavBackStack(Login);
     val currentDestination = backStack.lastOrNull()
     val showNavBar = currentDestination != null && currentDestination !is Login
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val authViewModel: AuthViewModel = viewModel()
     val scope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        authViewModel.events.collect { event ->
+            when (event) {
+                is AuthEvent.NavigateToHome -> {
+                    backStack.clear()
+                    backStack.add(Festivals)
+                }
+                // Manage the logout call
+                is AuthEvent.NavigateToLogin -> {
+                    backStack.clear()
+                    backStack.add(Login)
+                }
+                else -> {}
+            }
+        }
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -51,6 +74,9 @@ fun AppNavHost(isAdmin: Boolean = false) {
                             icon = { Icon(destination.icon, contentDescription = destination.label) },
                             selected = currentDestination == destination.route,
                             onClick = {
+                                if (destination == NavBarDestination.LOGOUT) {
+                                    authViewModel.logout()
+                                }
                                 backStack.clear()
                                 backStack.add(destination.route)
                                 scope.launch { drawerState.close() }
@@ -79,7 +105,7 @@ fun AppNavHost(isAdmin: Boolean = false) {
                 modifier = Modifier.padding(innerPadding),
                 onBack = { backStack.removeLastOrNull() },
                 entryProvider = entryProvider {
-                    entry<Login> { Text("Login") }
+                    entry<Login> { AuthScreen(viewModel = authViewModel)}
                     entry<Festivals> { Text("Festivals") }
                     entry<Jeux> { Text("Jeux") }
                     entry<Reservations> { Text("Réservations") }
