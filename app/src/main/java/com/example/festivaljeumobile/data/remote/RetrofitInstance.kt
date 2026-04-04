@@ -34,11 +34,15 @@ object RetrofitInstance {
         .addInterceptor(loggingInterceptor)
         .build()
 
+    private val json = Json {
+        ignoreUnknownKeys = true
+    }
+
     val retrofit: Retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL)
         .client(okHttpClient)
         .addConverterFactory(
-            Json.asConverterFactory("application/json".toMediaType())
+            json.asConverterFactory("application/json".toMediaType())
         )
         .build()
 }

@@ -68,7 +68,6 @@ class AuthViewModel(
             _uiState.value = AuthUiState.Loading
             authRepository.login(login, password).fold(
                 onSuccess = {
-
                     _login.value = ""
                     _password.value = ""
                     _events.send(AuthEvent.NavigateToHome)
