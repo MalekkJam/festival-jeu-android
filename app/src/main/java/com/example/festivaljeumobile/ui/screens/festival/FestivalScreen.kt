@@ -39,6 +39,7 @@ import com.example.festivaljeumobile.viewModel.festival.FestivalListViewModel
 @Composable
 fun FestivalScreen(
     onAddFestivalClick: () -> Unit,
+    onEditFestivalClick: (Festival) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val festivalViewModel: FestivalListViewModel = viewModel()
@@ -47,6 +48,8 @@ fun FestivalScreen(
     FestivalList(
         uiState = uiState,
         onAddFestivalClick = onAddFestivalClick,
+        onEditFestivalClick = onEditFestivalClick,
+        onDeleteFestivalClick = festivalViewModel::deleteFestival,
         onRetryClick = festivalViewModel::refreshFestivals,
         modifier = modifier
     )
@@ -56,6 +59,8 @@ fun FestivalScreen(
 fun FestivalList(
     uiState: FestivalListUiState,
     onAddFestivalClick: () -> Unit,
+    onEditFestivalClick: (Festival) -> Unit,
+    onDeleteFestivalClick: (Festival) -> Unit,
     onRetryClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -64,18 +69,20 @@ fun FestivalList(
             .fillMaxSize()
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        Button(
-            onClick = onAddFestivalClick,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = null
-            )
-            Text(
-                text = "Ajouter un festival",
-                modifier = Modifier.padding(start = 8.dp)
-            )
+        if (!uiState.isOffline) {
+            Button(
+                onClick = onAddFestivalClick,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = null
+                )
+                Text(
+                    text = "Ajouter un festival",
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -165,7 +172,14 @@ fun FestivalList(
                         items = uiState.festivals,
                         key = { festival -> festival.id }
                     ) { festival ->
-                        FestivalCard(festival = festival)
+                        FestivalCard(
+                            festival = festival,
+                            canUpdate = !uiState.isOffline,
+                            canDelete = !uiState.isOffline,
+                            isDeleting = uiState.deletingFestivalId == festival.id,
+                            onUpdateClick = { onEditFestivalClick(festival) },
+                            onDeleteClick = { onDeleteFestivalClick(festival) }
+                        )
                     }
                 }
             }
@@ -173,71 +187,26 @@ fun FestivalList(
     }
 }
 
+@Preview(showBackground = true)
 @Composable
-private fun FestivalCard(
-    festival: Festival,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = festival.nom,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-            InfoRow(label = "Date de debut", value = festival.date_debut.toDisplayDate())
-            InfoRow(label = "Date de fin", value = festival.date_fin.toDisplayDate())
-            InfoRow(label = "Nombre de tables", value = festival.nbTables.toString())
-        }
-    }
-}
-
-@Composable
-private fun StatusCard(
-    text: String,
-    containerColor: androidx.compose.ui.graphics.Color,
-    contentColor: androidx.compose.ui.graphics.Color,
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = containerColor)
-    ) {
-        Text(
-            text = text,
-            color = contentColor,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(16.dp)
+private fun FestivalScreenPreview() {
+    FestivalJeuMobileTheme {
+        FestivalList(
+            uiState = FestivalListUiState(
+                festivals = listOf(
+                    Festival(
+                        id = 1L,
+                        nom = "Festival du Jeu de Paris",
+                        date_debut = "2026-05-12T00:00:00.000Z",
+                        date_fin = "2026-05-15T00:00:00.000Z",
+                        nbTables = 42
+                    )
+                )
+            ),
+            onAddFestivalClick = {},
+            onEditFestivalClick = {},
+            onDeleteFestivalClick = {},
+            onRetryClick = {}
         )
     }
 }
-
-@Composable
-private fun InfoRow(
-    label: String,
-    value: String,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Medium
-        )
-    }
-}
-
-private fun String.toDisplayDate(): String = substringBefore("T")

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
@@ -36,6 +37,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.example.festivaljeumobile.FestivalApp
 import com.example.festivaljeumobile.ui.screens.auth.AuthScreen
+import com.example.festivaljeumobile.ui.screens.festival.FestivalFormScreen
 import com.example.festivaljeumobile.ui.screens.festival.FestivalScreen
 import com.example.festivaljeumobile.viewModel.auth.AuthEvent
 import com.example.festivaljeumobile.viewModel.auth.AuthViewModel
@@ -71,6 +73,7 @@ fun AppNavHost(isAdmin: Boolean = false) {
     val backStack = rememberNavBackStack(startDestination!!);
     val currentDestination = backStack.lastOrNull()
     val showNavBar = currentDestination != null && currentDestination !is Login
+    val showDrawer = currentDestination != null && currentDestination !is Login && currentDestination !is FestivalForm
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val authViewModel: AuthViewModel = viewModel()
@@ -95,7 +98,7 @@ fun AppNavHost(isAdmin: Boolean = false) {
 
     ModalNavigationDrawer(
         drawerState = drawerState,
-        gesturesEnabled = showNavBar,
+        gesturesEnabled = showDrawer,
         drawerContent = {
             ModalDrawerSheet {
                 Text(
@@ -129,8 +132,14 @@ fun AppNavHost(isAdmin: Boolean = false) {
                     TopAppBar(
                         title = { Text("Festival Jeu Mobile") },
                         navigationIcon = {
-                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                                Icon(Icons.Default.Menu, contentDescription = "Menu")
+                            if (currentDestination == FestivalForm) {
+                                IconButton(onClick = { backStack.removeLastOrNull() }) {
+                                    Icon(Icons.Default.ArrowBack, contentDescription = "Retour")
+                                }
+                            } else {
+                                IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                    Icon(Icons.Default.Menu, contentDescription = "Menu")
+                                }
                             }
                         }
                     )
@@ -146,8 +155,25 @@ fun AppNavHost(isAdmin: Boolean = false) {
                     entry<Festivals> {
                         FestivalScreen(
                             onAddFestivalClick = {
-                                // Creation screen will be connected here later.
+                                backStack.add(FestivalForm())
+                            },
+                            onEditFestivalClick = { festival ->
+                                backStack.add(
+                                    FestivalForm(
+                                        id = festival.id,
+                                        nom = festival.nom,
+                                        date_debut = festival.date_debut,
+                                        date_fin = festival.date_fin,
+                                        nbTables = festival.nbTables
+                                    )
+                                )
                             }
+                        )
+                    }
+                    entry<FestivalForm> { festivalForm ->
+                        FestivalFormScreen(
+                            initialFestival = festivalForm.toFestivalOrNull(),
+                            onBackClick = { backStack.removeLastOrNull() }
                         )
                     }
                     entry<Jeux> { Text("Jeux") }
@@ -172,3 +198,14 @@ private fun Context.isOnline(): Boolean {
     return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
         capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
 }
+
+private fun FestivalForm.toFestivalOrNull() =
+    id?.let {
+        com.example.festivaljeumobile.domain.model.Festival(
+            id = it,
+            nom = nom,
+            date_debut = date_debut,
+            date_fin = date_fin,
+            nbTables = nbTables
+        )
+    }

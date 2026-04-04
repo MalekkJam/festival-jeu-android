@@ -20,6 +20,7 @@ data class FestivalListUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val isOffline: Boolean = false,
+    val deletingFestivalId: Long? = null,
 )
 
 class FestivalListViewModel(
@@ -54,6 +55,32 @@ class FestivalListViewModel(
         refreshFestivals()
     }
 
+    fun deleteFestival(festival: Festival) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _uiState.update {
+                it.copy(
+                    deletingFestivalId = festival.id,
+                    error = null
+                )
+            }
+
+            festivalRepository.delete(festival).fold(
+                onSuccess = {
+                    _uiState.update {
+                        it.copy(deletingFestivalId = null)
+                    }
+                },
+                onFailure = { throwable ->
+                    _uiState.update {
+                        it.copy(
+                            deletingFestivalId = null,
+                            error = throwable.message ?: "Impossible de supprimer le festival."
+                        )
+                    }
+                }
+            )
+        }
+    }
     fun refreshFestivals() {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.update {

@@ -14,6 +14,9 @@ interface FestivalDao {
     @Query("SELECT EXISTS(SELECT 1 FROM festivals LIMIT 1)")
     suspend fun hasFestivals(): Boolean
 
+    @Query("DELETE FROM festivals WHERE id = :festivalId")
+    suspend fun deleteById(festivalId: Long)
+
     @Upsert
     suspend fun upsertAll(festivals: List<FestivalEntity>)
 }
