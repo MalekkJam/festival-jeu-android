@@ -1,7 +1,7 @@
 package com.example.festivaljeumobile.domain.model
 
 data class User(
-    val id: Long? = null,
+    val id: Int? = null,
     val login: String,
     val role: UserRole,
     val password: String? = null,

@@ -36,7 +36,7 @@ class AuthRepositoryImpl(
             val response = authApi.whoAmI()
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!
-                Result.success(User(id = body.id, role = body.role, login ="", password = null,prenom = null,nom = null))
+                Result.success(User(role = body.role, login ="", password = null,prenom = null,nom = null))
             } else Result.failure(Exception("Non authentifié."))
         } catch (e: Exception) {
             Result.failure(Exception("Erreur réseau."))
