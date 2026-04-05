@@ -3,6 +3,7 @@ package com.example.festivaljeumobile.data.local.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.festivaljeumobile.domain.model.Festival
+import com.example.festivaljeumobile.domain.model.ZoneTarifaire
 
 @Entity(tableName = "festivals")
 data class FestivalEntity(
@@ -11,6 +12,7 @@ data class FestivalEntity(
     val date_debut: String,
     val date_fin: String,
     val nbTables: Int,
+    val zoneTarifaires: List<ZoneTarifaire> = emptyList(),
 ) {
     fun toFestival(): Festival =
         Festival(
@@ -18,6 +20,7 @@ data class FestivalEntity(
             nom = nom,
             date_debut = date_debut,
             date_fin = date_fin,
-            nbTables = nbTables
+            nbTables = nbTables,
+            zoneTarifaires = zoneTarifaires
         )
 }

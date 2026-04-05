@@ -1,6 +1,7 @@
 package com.example.festivaljeumobile.ui.navigation
 
 import androidx.navigation3.runtime.NavKey
+import com.example.festivaljeumobile.domain.model.ZoneTarifaire
 import kotlinx.serialization.Serializable
 
 @Serializable object Login : NavKey
@@ -12,6 +13,16 @@ data class FestivalForm(
     val date_debut: String = "",
     val date_fin: String = "",
     val nbTables: Int = 0,
+    val zoneTarifaires: List<ZoneTarifaire> = emptyList(),
+) : NavKey
+@Serializable
+data class FestivalDetails(
+    val id: Long? = null,
+    val nom: String = "",
+    val date_debut: String = "",
+    val date_fin: String = "",
+    val nbTables: Int = 0,
+    val zoneTarifaires: List<ZoneTarifaire> = emptyList(),
 ) : NavKey
 @Serializable object Jeux : NavKey
 @Serializable object Reservations : NavKey
