@@ -30,6 +30,7 @@ class FestivalApp : Application() {
     val festivalRepository by lazy {
         FestivalRepositoryImpl(
             festivalDao = festivalDatabase.festivalDao(),
+            zoneTarifaireDao = festivalDatabase.zoneTarifaireDao(),
             festivalApi = festivalApi
         )
     }

@@ -39,6 +39,7 @@ import com.example.festivaljeumobile.viewModel.festival.FestivalListViewModel
 @Composable
 fun FestivalScreen(
     onAddFestivalClick: () -> Unit,
+    onFestivalClick: (Festival) -> Unit,
     onEditFestivalClick: (Festival) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -48,6 +49,7 @@ fun FestivalScreen(
     FestivalList(
         uiState = uiState,
         onAddFestivalClick = onAddFestivalClick,
+        onFestivalClick = onFestivalClick,
         onEditFestivalClick = onEditFestivalClick,
         onDeleteFestivalClick = festivalViewModel::deleteFestival,
         onRetryClick = festivalViewModel::refreshFestivals,
@@ -59,6 +61,7 @@ fun FestivalScreen(
 fun FestivalList(
     uiState: FestivalListUiState,
     onAddFestivalClick: () -> Unit,
+    onFestivalClick: (Festival) -> Unit,
     onEditFestivalClick: (Festival) -> Unit,
     onDeleteFestivalClick: (Festival) -> Unit,
     onRetryClick: () -> Unit,
@@ -177,6 +180,7 @@ fun FestivalList(
                             canUpdate = !uiState.isOffline,
                             canDelete = !uiState.isOffline,
                             isDeleting = uiState.deletingFestivalId == festival.id,
+                            onClick = { onFestivalClick(festival) },
                             onUpdateClick = { onEditFestivalClick(festival) },
                             onDeleteClick = { onDeleteFestivalClick(festival) }
                         )
@@ -204,6 +208,7 @@ private fun FestivalScreenPreview() {
                 )
             ),
             onAddFestivalClick = {},
+            onFestivalClick = {},
             onEditFestivalClick = {},
             onDeleteFestivalClick = {},
             onRetryClick = {}

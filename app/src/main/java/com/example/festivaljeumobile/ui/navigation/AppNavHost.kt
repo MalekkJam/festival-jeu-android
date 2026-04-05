@@ -73,11 +73,15 @@ fun AppNavHost(isAdmin: Boolean = false) {
     val backStack = rememberNavBackStack(startDestination!!);
     val currentDestination = backStack.lastOrNull()
     val showNavBar = currentDestination != null && currentDestination !is Login
-    val showDrawer = currentDestination != null && currentDestination !is Login && currentDestination !is FestivalForm
+    val showDrawer = currentDestination != null &&
+        currentDestination !is Login &&
+        currentDestination !is FestivalForm &&
+        currentDestination !is FestivalDetails
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val authViewModel: AuthViewModel = viewModel()
     val scope = rememberCoroutineScope()
+    val isOffline = !context.isOnline()
 
     LaunchedEffect(Unit) {
         authViewModel.events.collect { event ->
@@ -107,7 +111,10 @@ fun AppNavHost(isAdmin: Boolean = false) {
                     modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
                 )
                 NavBarDestination.entries
-                    .filter { !it.adminOnly || isAdmin }
+                    .filter { destination ->
+                        (!destination.adminOnly || isAdmin) &&
+                            (!isOffline || destination != NavBarDestination.LOGOUT)
+                    }
                     .forEach { destination ->
                         NavigationDrawerItem(
                             label = { Text(destination.label) },
@@ -132,7 +139,7 @@ fun AppNavHost(isAdmin: Boolean = false) {
                     TopAppBar(
                         title = { Text("Festival Jeu Mobile") },
                         navigationIcon = {
-                            if (currentDestination == FestivalForm) {
+                            if (currentDestination is FestivalForm || currentDestination is FestivalDetails) {
                                 IconButton(onClick = { backStack.removeLastOrNull() }) {
                                     Icon(Icons.Default.ArrowBack, contentDescription = "Retour")
                                 }
@@ -157,6 +164,18 @@ fun AppNavHost(isAdmin: Boolean = false) {
                             onAddFestivalClick = {
                                 backStack.add(FestivalForm())
                             },
+                            onFestivalClick = { festival ->
+                                backStack.add(
+                                    FestivalDetails(
+                                        id = festival.id,
+                                        nom = festival.nom,
+                                        date_debut = festival.date_debut,
+                                        date_fin = festival.date_fin,
+                                        nbTables = festival.nbTables,
+                                        zoneTarifaires = festival.zoneTarifaires
+                                    )
+                                )
+                            },
                             onEditFestivalClick = { festival ->
                                 backStack.add(
                                     FestivalForm(
@@ -164,7 +183,8 @@ fun AppNavHost(isAdmin: Boolean = false) {
                                         nom = festival.nom,
                                         date_debut = festival.date_debut,
                                         date_fin = festival.date_fin,
-                                        nbTables = festival.nbTables
+                                        nbTables = festival.nbTables,
+                                        zoneTarifaires = festival.zoneTarifaires
                                     )
                                 )
                             }
@@ -173,6 +193,13 @@ fun AppNavHost(isAdmin: Boolean = false) {
                     entry<FestivalForm> { festivalForm ->
                         FestivalFormScreen(
                             initialFestival = festivalForm.toFestivalOrNull(),
+                            onBackClick = { backStack.removeLastOrNull() }
+                        )
+                    }
+                    entry<FestivalDetails> { festivalDetails ->
+                        FestivalFormScreen(
+                            initialFestival = festivalDetails.toFestivalOrNull(),
+                            readOnly = true,
                             onBackClick = { backStack.removeLastOrNull() }
                         )
                     }
@@ -206,6 +233,19 @@ private fun FestivalForm.toFestivalOrNull() =
             nom = nom,
             date_debut = date_debut,
             date_fin = date_fin,
-            nbTables = nbTables
+            nbTables = nbTables,
+            zoneTarifaires = zoneTarifaires
+        )
+    }
+
+private fun FestivalDetails.toFestivalOrNull() =
+    id?.let {
+        com.example.festivaljeumobile.domain.model.Festival(
+            id = it,
+            nom = nom,
+            date_debut = date_debut,
+            date_fin = date_fin,
+            nbTables = nbTables,
+            zoneTarifaires = zoneTarifaires
         )
     }

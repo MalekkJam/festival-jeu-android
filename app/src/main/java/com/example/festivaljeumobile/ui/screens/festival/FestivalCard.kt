@@ -29,11 +29,13 @@ fun FestivalCard(
     canUpdate: Boolean,
     canDelete: Boolean,
     isDeleting: Boolean,
+    onClick: () -> Unit,
     onUpdateClick: () -> Unit,
     onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
+        onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {

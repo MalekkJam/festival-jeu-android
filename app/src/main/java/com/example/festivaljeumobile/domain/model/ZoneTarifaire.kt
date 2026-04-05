@@ -1,8 +1,11 @@
 package com.example.festivaljeumobile.domain.model
 
-data class ZoneTarifaire (
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class ZoneTarifaire(
     val id: Int? = null,
     val nom: String,
-    val nbTables : Int,
+    val nbTables: Int,
     val prixDuM2: Int,
 )
