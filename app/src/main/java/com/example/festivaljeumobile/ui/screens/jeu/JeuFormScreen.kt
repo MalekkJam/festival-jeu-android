@@ -29,6 +29,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.festivaljeumobile.domain.model.Jeu
+import com.example.festivaljeumobile.viewModel.jeu.JeuFormViewModel
+import com.example.festivaljeumobile.viewModel.jeu.JeuDetailUiState
+import com.example.festivaljeumobile.viewModel.jeu.JeuActionUiState
 
 /**
  * Écran formulaire pour créer/éditer un jeu
@@ -62,12 +65,27 @@ fun JeuFormScreen(
         }
     }
 
-    // Gestion du succès d'une action
-    when (actionState.value) {
-        is JeuActionUiState.Success -> {
-            onSuccessNavigateBack()
+    // Initialiser les champs quand les données arrivent (une seule fois par jeu)
+    LaunchedEffect(detailState.value) {
+        if (detailState.value is JeuDetailUiState.Success) {
+            val jeu = (detailState.value as JeuDetailUiState.Success).jeu
+            libelle.value = jeu.libelleJeu
+            auteur.value = jeu.auteurJeu ?: ""
+            nbMinJoueur.intValue = jeu.nbMinJoueurJeu ?: 0
+            nbMaxJoueur.intValue = jeu.nbMaxJoueurJeu ?: 0
+            theme.value = jeu.theme ?: ""
+            description.value = jeu.description ?: ""
+            duree.intValue = jeu.duree ?: 0
+            agemini.intValue = jeu.agemini ?: 0
         }
-        else -> {}
+    }
+
+    // Gestion du succès d'une action (one-shot)
+    LaunchedEffect(actionState.value) {
+        if (actionState.value is JeuActionUiState.Success) {
+            onSuccessNavigateBack()
+            viewModel.resetActionState()
+        }
     }
 
     Scaffold(
@@ -83,30 +101,64 @@ fun JeuFormScreen(
         }
     ) { paddingValues ->
         when (val state = detailState.value) {
+            // Mode édition : chargement
             JeuDetailUiState.Loading -> {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    CircularProgressIndicator()
+                // Si c'est édition (jeuId != null), affiche un spinner
+                if (jeuId != null) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    // Mode création : affiche le formulaire vide
+                    FormContent(
+                        libelle = libelle.value,
+                        onLibelleChange = { libelle.value = it },
+                        auteur = auteur.value,
+                        onAuteurChange = { auteur.value = it },
+                        nbMinJoueur = nbMinJoueur.intValue.toString(),
+                        onNbMinJoueurChange = { nbMinJoueur.intValue = it.toIntOrNull() ?: 0 },
+                        nbMaxJoueur = nbMaxJoueur.intValue.toString(),
+                        onNbMaxJoueurChange = { nbMaxJoueur.intValue = it.toIntOrNull() ?: 0 },
+                        theme = theme.value,
+                        onThemeChange = { theme.value = it },
+                        description = description.value,
+                        onDescriptionChange = { description.value = it },
+                        duree = duree.intValue.toString(),
+                        onDureeChange = { duree.intValue = it.toIntOrNull() ?: 0 },
+                        agemini = agemini.intValue.toString(),
+                        onAgeMiniChange = { agemini.intValue = it.toIntOrNull() ?: 0 },
+                        isLoading = actionState.value is JeuActionUiState.Loading,
+                        error = (actionState.value as? JeuActionUiState.Error)?.message,
+                        onSubmit = {
+                            // Mode création : addJeu
+                            val newJeu = Jeu(
+                                idJeu = 0,
+                                libelleJeu = libelle.value,
+                                auteurJeu = auteur.value,
+                                nbMinJoueurJeu = nbMinJoueur.intValue,
+                                nbMaxJoueurJeu = nbMaxJoueur.intValue,
+                                theme = theme.value,
+                                description = description.value,
+                                duree = duree.intValue,
+                                agemini = agemini.intValue
+                            )
+                            viewModel.addJeu(newJeu)
+                        },
+                        onCancel = onNavigateBack,
+                        paddingValues = paddingValues
+                    )
                 }
             }
 
+            // Mode édition : jeu chargé avec succès
             is JeuDetailUiState.Success -> {
                 val jeu = state.jeu
-                // Remplir les champs
-                libelle.value = jeu.libelleJeu
-                auteur.value = jeu.auteurJeu ?: ""
-                nbMinJoueur.intValue = jeu.nbMinJoueurJeu ?: 0
-                nbMaxJoueur.intValue = jeu.nbMaxJoueurJeu ?: 0
-                theme.value = jeu.theme ?: ""
-                description.value = jeu.description ?: ""
-                duree.intValue = jeu.duree ?: 0
-                agemini.intValue = jeu.agemini ?: 0
-
                 FormContent(
                     libelle = libelle.value,
                     onLibelleChange = { libelle.value = it },
@@ -127,6 +179,7 @@ fun JeuFormScreen(
                     isLoading = actionState.value is JeuActionUiState.Loading,
                     error = (actionState.value as? JeuActionUiState.Error)?.message,
                     onSubmit = {
+                        // Mode édition : updateJeu
                         val updatedJeu = jeu.copy(
                             libelleJeu = libelle.value,
                             auteurJeu = auteur.value,

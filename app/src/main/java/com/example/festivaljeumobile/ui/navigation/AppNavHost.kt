@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -85,8 +86,9 @@ fun AppNavHost(isAdmin: Boolean = false) {
                     entry<Login> { Text("Login") }
                     entry<Festivals> { Text("Festivals") }
                     entry<Jeux> {
+                        val viewModel = remember { ServiceLocator.createJeuListViewModel() }
                         JeuListScreen(
-                            viewModel = ServiceLocator.createJeuListViewModel(),
+                            viewModel = viewModel,
                             onJeuClick = { jeuId ->
                                 // À implémenter si JeuDetailScreen existe
                             },
@@ -99,19 +101,20 @@ fun AppNavHost(isAdmin: Boolean = false) {
                         )
                     }
                     entry<JeuForm> {
+                        val viewModel = remember { ServiceLocator.createJeuFormViewModel() }
                         JeuFormScreen(
-                            viewModel = ServiceLocator.createJeuFormViewModel(),
+                            viewModel = viewModel,
                             onNavigateBack = { backStack.removeLastOrNull() },
                             onSuccessNavigateBack = {
                                 backStack.removeLastOrNull()
-                                backStack.add(Jeux)
                             }
                         )
                     }
                     entry<JeuEditForm> { jeuEditForm ->
+                        val viewModel = remember { ServiceLocator.createJeuFormViewModel() }
                         JeuFormScreen(
                             jeuId = jeuEditForm.jeuId,
-                            viewModel = ServiceLocator.createJeuFormViewModel(),
+                            viewModel = viewModel,
                             onNavigateBack = { backStack.removeLastOrNull() },
                             onSuccessNavigateBack = {
                                 backStack.removeLastOrNull()
