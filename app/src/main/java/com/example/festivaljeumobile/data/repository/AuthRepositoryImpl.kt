@@ -12,14 +12,13 @@ class AuthRepositoryImpl(
 
     override suspend fun login(login: String, password: String): Result<Unit> {
         return try {
-            Log.d("LOGIN", "Attempting login for user: $login")
+            Log.d("LOGIN", "Attempting login...")
             val response = authApi.login(LoginRequestDto(login, password))
-            Log.d("LOGIN", "Response code: ${response.code()}, body: ${response.body()}, error: ${response.errorBody()}")
             if (response.isSuccessful && response.body() != null) {
-                Log.d("LOGIN", "Login successful, cookies set")
+                Log.d("LOGIN", "Login successful")
                 Result.success(Unit)
             } else {
-                Log.e("LOGIN", "Login failed with status: ${response.code()}")
+                Log.w("LOGIN", "Login failed with status: ${response.code()}")
                 Result.failure(Exception("Identifiants incorrects."))
             }
         } catch (e: Exception) {
