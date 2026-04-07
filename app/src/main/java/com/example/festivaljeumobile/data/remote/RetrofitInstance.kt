@@ -9,7 +9,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
-import com.example.festivaljeumobile.data.remote.interceptor.AuthInterceptor
 
 object RetrofitInstance {
 
@@ -32,7 +31,6 @@ object RetrofitInstance {
 
     private val okHttpClient = OkHttpClient.Builder()
         .cookieJar(cookieJar)
-        .addInterceptor(AuthInterceptor())
         .addInterceptor(loggingInterceptor)
         .build()
 
