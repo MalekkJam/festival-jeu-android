@@ -1,6 +1,7 @@
 package com.example.festivaljeumobile.data.remote.api
 
 import com.example.festivaljeumobile.data.remote.dto.JeuDto
+import kotlinx.serialization.Serializable
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -20,7 +21,7 @@ interface JeuApi {
     /**
      * POST /api/jeux/addJeu
      * Rôles requis : SuperOrganisateur, Admin
-     * Body : JeuDto complet (sans idJeu)
+     * Body : JeuDto avec idJeu = 0 (le serveur assigne l'ID réel)
      */
     @POST("/api/jeux/addJeu")
     suspend fun addJeu(@Body jeu: JeuDto): JeuDto
@@ -41,6 +42,7 @@ interface JeuApi {
     @POST("/api/jeux/deleteJeu")
     suspend fun deleteJeu(@Body request: DeleteJeuRequest): Unit
 
+    @Serializable
     data class DeleteJeuRequest(
         val id: Int,
         val nom: String
