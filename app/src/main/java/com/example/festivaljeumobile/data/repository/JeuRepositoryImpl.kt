@@ -34,7 +34,7 @@ class JeuRepositoryImpl(
     }
 
     /**
-     * Crée un jeu via API
+     * Crée um jeu via API
      */
     override suspend fun addJeu(jeu: Jeu): Result<Jeu> = try {
         val createdDto = jeuApi.addJeu(jeu.toDto())

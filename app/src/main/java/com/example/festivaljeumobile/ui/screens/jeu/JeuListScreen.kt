@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.festivaljeumobile.ui.screens.jeu.components.JeuCard
+import com.example.festivaljeumobile.viewModel.jeu.JeuListViewModel
 
 /**
  * Écran liste des jeux

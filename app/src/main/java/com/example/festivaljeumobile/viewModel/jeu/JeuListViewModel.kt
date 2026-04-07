@@ -1,4 +1,4 @@
-package com.example.festivaljeumobile.ui.screens.jeu
+package com.example.festivaljeumobile.viewModel.jeu
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
