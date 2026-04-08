@@ -5,13 +5,17 @@ import androidx.room.Room
 import com.example.festivaljeumobile.data.local.db.FestivalDatabase
 import com.example.festivaljeumobile.data.local.preferences.CookieDataStore
 import com.example.festivaljeumobile.data.remote.RetrofitInstance
+import com.example.festivaljeumobile.data.remote.api.AuthApi
 import com.example.festivaljeumobile.data.remote.api.FestivalApi
 import com.example.festivaljeumobile.data.remote.api.JeuApi
 import com.example.festivaljeumobile.data.remote.api.ReservationApi
 import com.example.festivaljeumobile.data.remote.api.ReservantApi
+import com.example.festivaljeumobile.data.remote.api.UserApi
+import com.example.festivaljeumobile.data.repository.AuthRepositoryImpl
 import com.example.festivaljeumobile.data.repository.FestivalRepositoryImpl
 import com.example.festivaljeumobile.data.repository.JeuRepositoryImpl
 import com.example.festivaljeumobile.data.repository.ReservationRepositoryImpl
+import com.example.festivaljeumobile.data.repository.UserRepositoryImpl
 
 class FestivalApp : Application() {
 
@@ -41,6 +45,10 @@ class FestivalApp : Application() {
         RetrofitInstance.retrofit.create(FestivalApi::class.java)
     }
 
+    val authApi: AuthApi by lazy {
+        RetrofitInstance.retrofit.create(AuthApi::class.java)
+    }
+
     val reservationApi: ReservationApi by lazy {
         RetrofitInstance.retrofit.create(ReservationApi::class.java)
     }
@@ -53,8 +61,20 @@ class FestivalApp : Application() {
         RetrofitInstance.retrofit.create(JeuApi::class.java)
     }
 
+    val userApi: UserApi by lazy {
+        RetrofitInstance.retrofit.create(UserApi::class.java)
+    }
+
+    val authRepository by lazy {
+        AuthRepositoryImpl(authApi)
+    }
+
     val jeuRepository by lazy {
         JeuRepositoryImpl(jeuApi)
+    }
+
+    val userRepository by lazy {
+        UserRepositoryImpl(userApi)
     }
 
     val festivalRepository by lazy {
