@@ -123,7 +123,7 @@ Le backend utilise un système **JWT double token** :
 ## Structure des dossiers — Android
 
 ```
-com.example.festivaldujeu/
+com.example.festivaljeumobile/
 ├── di/
 │   ├── NetworkModule.kt          # Retrofit, OkHttp, CookieJar
 │   ├── DatabaseModule.kt         # Room AppDatabase
