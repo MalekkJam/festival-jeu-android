@@ -1,0 +1,208 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 6,
+    "identityHash": "0ce8c35f229512da4ee90f6abc7fed8a",
+    "entities": [
+      {
+        "tableName": "festivals",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `nom` TEXT NOT NULL, `date_debut` TEXT NOT NULL, `date_fin` TEXT NOT NULL, `nbTables` INTEGER NOT NULL, `zoneTarifaires` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nom",
+            "columnName": "nom",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "date_debut",
+            "columnName": "date_debut",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "date_fin",
+            "columnName": "date_fin",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nbTables",
+            "columnName": "nbTables",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "zoneTarifaires",
+            "columnName": "zoneTarifaires",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "zone_tarifaires",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `festivalId` INTEGER NOT NULL, `nom` TEXT NOT NULL, `nbTables` INTEGER NOT NULL, `prixDuM2` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`festivalId`) REFERENCES `festivals`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "festivalId",
+            "columnName": "festivalId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nom",
+            "columnName": "nom",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nbTables",
+            "columnName": "nbTables",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "prixDuM2",
+            "columnName": "prixDuM2",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_zone_tarifaires_festivalId",
+            "unique": false,
+            "columnNames": [
+              "festivalId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_zone_tarifaires_festivalId` ON `${TABLE_NAME}` (`festivalId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "festivals",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "festivalId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "reservations",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `reservantId` INTEGER NOT NULL, `festivalId` INTEGER NOT NULL, `festivalName` TEXT NOT NULL, `reservantName` TEXT NOT NULL, `etatDeSuivi` TEXT NOT NULL, `dateDeContact` TEXT, `remise` TEXT, `montantRemise` INTEGER, `facturee` INTEGER NOT NULL, `payee` INTEGER NOT NULL, `jeux` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reservantId",
+            "columnName": "reservantId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "festivalId",
+            "columnName": "festivalId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "festivalName",
+            "columnName": "festivalName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reservantName",
+            "columnName": "reservantName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "etatDeSuivi",
+            "columnName": "etatDeSuivi",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateDeContact",
+            "columnName": "dateDeContact",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "remise",
+            "columnName": "remise",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "montantRemise",
+            "columnName": "montantRemise",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "facturee",
+            "columnName": "facturee",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payee",
+            "columnName": "payee",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "jeux",
+            "columnName": "jeux",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0ce8c35f229512da4ee90f6abc7fed8a')"
+    ]
+  }
+}

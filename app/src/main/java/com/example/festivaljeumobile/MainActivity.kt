@@ -4,15 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.lifecycle.lifecycleScope
-import com.example.festivaljeumobile.data.service.AuthService
+import com.example.festivaljeumobile.data.remote.RetrofitInstance
 import com.example.festivaljeumobile.ui.navigation.AppNavHost
-import com.example.festivaljeumobile.ui.screens.auth.AuthScreen
 import com.example.festivaljeumobile.ui.theme.FestivalJeuMobileTheme
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,9 +25,18 @@ class MainActivity : ComponentActivity() {
         setContent {
             FestivalJeuMobileTheme {
                 AppNavHost()
-         }
-     }
- }
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        if (isFinishing && !isChangingConfigurations) {
+            runBlocking(Dispatchers.IO) {
+                RetrofitInstance.clearCookies()
+            }
+        }
+        super.onDestroy()
+    }
 }
 
 @Composable

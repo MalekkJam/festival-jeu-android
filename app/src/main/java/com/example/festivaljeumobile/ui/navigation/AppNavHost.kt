@@ -40,6 +40,8 @@ import com.example.festivaljeumobile.FestivalApp
 import com.example.festivaljeumobile.ui.screens.auth.AuthScreen
 import com.example.festivaljeumobile.ui.screens.festival.FestivalFormScreen
 import com.example.festivaljeumobile.ui.screens.festival.FestivalScreen
+import com.example.festivaljeumobile.ui.screens.reservation.ReservationFormScreen
+import com.example.festivaljeumobile.ui.screens.reservation.ReservationScreen
 import com.example.festivaljeumobile.viewModel.auth.AuthEvent
 import com.example.festivaljeumobile.viewModel.auth.AuthViewModel
 import kotlinx.coroutines.Dispatchers
@@ -56,7 +58,9 @@ fun AppNavHost(isAdmin: Boolean = false) {
     val startDestination by produceState<NavKey?>(initialValue = null, context) {
         value = withContext(Dispatchers.IO) {
             val app = context as FestivalApp
+            val hasSessionCookie = app.cookieDataStore.hasValidCookies()
             when {
+                hasSessionCookie -> Festivals
                 context.isOnline() -> Login
                 app.festivalDatabase.festivalDao().hasFestivals() -> Festivals
                 else -> Login
@@ -80,7 +84,8 @@ fun AppNavHost(isAdmin: Boolean = false) {
     val showDrawer = currentDestination != null &&
         currentDestination !is Login &&
         currentDestination !is FestivalForm &&
-        currentDestination !is FestivalDetails
+        currentDestination !is FestivalDetails &&
+        currentDestination !is ReservationForm
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val authViewModel: AuthViewModel = viewModel()
@@ -143,7 +148,11 @@ fun AppNavHost(isAdmin: Boolean = false) {
                     TopAppBar(
                         title = { Text("Festival Jeu Mobile") },
                         navigationIcon = {
-                            if (currentDestination is FestivalForm || currentDestination is FestivalDetails) {
+                            if (
+                                currentDestination is FestivalForm ||
+                                currentDestination is FestivalDetails ||
+                                currentDestination is ReservationForm
+                            ) {
                                 IconButton(onClick = { backStack.removeLastOrNull() }) {
                                     Icon(Icons.Default.ArrowBack, contentDescription = "Retour")
                                 }
@@ -207,6 +216,22 @@ fun AppNavHost(isAdmin: Boolean = false) {
                             onBackClick = { backStack.removeLastOrNull() }
                         )
                     }
+                    entry<Reservations> {
+                        ReservationScreen(
+                            onAddReservationClick = {
+                                backStack.add(ReservationForm())
+                            },
+                            onEditReservationClick = { reservation ->
+                                backStack.add(ReservationForm(reservation = reservation))
+                            }
+                        )
+                    }
+                    entry<ReservationForm> { reservationForm ->
+                        ReservationFormScreen(
+                            initialReservation = reservationForm.reservation,
+                            onBackClick = { backStack.removeLastOrNull() }
+                        )
+                    }
                     entry<Jeux> {
                         val viewModel = remember { ServiceLocator.createJeuListViewModel() }
                         JeuListScreen(
@@ -243,7 +268,6 @@ fun AppNavHost(isAdmin: Boolean = false) {
                             }
                         )
                     }
-                    entry<Reservations> { Text("Réservations") }
                     entry<Benevoles> { Text("Bénévoles") }
                     entry<Editeurs> { Text("Éditeurs") }
                     entry<Reservants> { Text("Réservants") }

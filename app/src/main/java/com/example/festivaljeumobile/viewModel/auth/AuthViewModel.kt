@@ -86,10 +86,12 @@ class AuthViewModel(
             _uiState.value = AuthUiState.Idle
             authRepository.logout().fold(
                 onSuccess = {
+                    RetrofitInstance.clearCookies()
                     _events.send(AuthEvent.NavigateToLogin)
                 },
                 onFailure = {
                     // même en cas d'erreur on déconnecte localement
+                    RetrofitInstance.clearCookies()
                     _events.send(AuthEvent.NavigateToLogin)
                 }
             )

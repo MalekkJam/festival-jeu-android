@@ -145,12 +145,21 @@ class FestivalRepositoryImpl(
         withContext(Dispatchers.IO) {
             try {
                 festival.zoneTarifaires.forEach { zone ->
-                    zone.id?.let { zoneId ->
-                        festivalApi.updateZone(zoneId, zone.toDto())
+                    if (zone.id != null) {
+                        festivalApi.updateZone(zone.id, zone.toDto())
+                    } else {
+                        festivalApi.addZone(festival.id, zone.toDto())
                     }
                 }
                 val updatedFestival = festivalApi.updateFestival(festival.toDto())
-                val syncedFestival = updatedFestival.withFallbackFrom(festival).withComputedTables()
+                val remoteZones = runCatching { festivalApi.getAllZones(festival.id) }
+                    .getOrElse { festival.zoneTarifaires.map { it.toDto() } }
+                val syncedFestival = updatedFestival
+                    .withFallbackFrom(festival)
+                    .copy(
+                        zones = remoteZones,
+                        nbTables = remoteZones.sumOf { it.nbTables }
+                    )
                 festivalDao.upsertAll(listOf(syncedFestival.toEntity()))
                 syncZonesForFestival(
                     zoneTarifaireDao = zoneTarifaireDao,

@@ -62,6 +62,8 @@ dependencies {
     implementation(libs.retrofit2.converter.kotlinx.serialization)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+    implementation("androidx.datastore:datastore-preferences:1.2.1")
+    implementation("androidx.datastore:datastore:1.2.1")
     ksp(libs.androidx.room.compiler)
     // Serialization
     implementation(libs.kotlinx.serialization.core)
