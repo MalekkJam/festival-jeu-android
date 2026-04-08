@@ -44,10 +44,10 @@ fun ReservationDto.toEntity(): ReservationEntity =
         montantRemise = montantRemise,
         facturee = facturee,
         payee = payee,
-        jeux = jeux.map { it.toDomain() }
+        jeux = jeux.map { it.toReservationJeu() }
     )
 
-private fun ReservationJeuDto.toDomain(): ReservationJeu =
+private fun ReservationJeuDto.toReservationJeu(): ReservationJeu =
     ReservationJeu(
         id = id,
         jeuId = jeuId,

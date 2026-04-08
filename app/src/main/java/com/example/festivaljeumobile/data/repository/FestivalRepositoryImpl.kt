@@ -6,7 +6,7 @@ import com.example.festivaljeumobile.data.local.entity.ZoneTarifaireEntity
 import com.example.festivaljeumobile.data.remote.api.FestivalApi
 import com.example.festivaljeumobile.data.remote.dto.FestivalDto
 import com.example.festivaljeumobile.data.remote.dto.ZoneTarifaireDto
-import com.example.festivaljeumobile.data.remote.dto.toDomain
+import com.example.festivaljeumobile.data.remote.dto.toZoneTarifaire
 import com.example.festivaljeumobile.data.remote.dto.toDeleteRequestDto
 import com.example.festivaljeumobile.data.remote.dto.toDto
 import com.example.festivaljeumobile.data.remote.dto.toEntity
@@ -42,7 +42,7 @@ class FestivalRepositoryImpl(
                     festivalId = festivalId,
                     zones = remoteZones
                 )
-                Result.success(remoteZones.map { it.toDomain() })
+                Result.success(remoteZones.map { it.toZoneTarifaire() })
             } catch (throwable: Throwable) {
                 val localZones = zoneTarifaireDao.getByFestivalId(festivalId).map { it.toDomain() }
                 if (localZones.isNotEmpty()) {

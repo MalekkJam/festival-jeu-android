@@ -9,7 +9,7 @@ data class ReservantDto(
     val nom: String,
 )
 
-fun ReservantDto.toDomain(): ReservantOption =
+fun ReservantDto.toReservantOption(): ReservantOption =
     ReservantOption(
         id = id,
         nom = nom

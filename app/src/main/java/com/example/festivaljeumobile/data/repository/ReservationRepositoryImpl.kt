@@ -2,12 +2,14 @@ package com.example.festivaljeumobile.data.repository
 
 import com.example.festivaljeumobile.data.local.dao.ReservationDao
 import com.example.festivaljeumobile.data.local.dao.ZoneTarifaireDao
+import com.example.festivaljeumobile.data.mapper.toDomain
 import com.example.festivaljeumobile.data.remote.api.FestivalApi
 import com.example.festivaljeumobile.data.remote.api.JeuApi
 import com.example.festivaljeumobile.data.remote.api.ReservationApi
 import com.example.festivaljeumobile.data.remote.api.ReservantApi
+import com.example.festivaljeumobile.data.remote.dto.toReservantOption
 import com.example.festivaljeumobile.data.remote.dto.toSaveRequestDto
-import com.example.festivaljeumobile.data.remote.dto.toDomain
+import com.example.festivaljeumobile.data.remote.dto.toZoneTarifaire
 import com.example.festivaljeumobile.data.remote.dto.toEntity
 import com.example.festivaljeumobile.domain.model.Festival
 import com.example.festivaljeumobile.domain.model.Jeu
@@ -58,7 +60,7 @@ class ReservationRepositoryImpl(
     override suspend fun getReservants(): Result<List<ReservantOption>> =
         withContext(Dispatchers.IO) {
             try {
-                Result.success(reservantApi.getAllReservants().map { it.toDomain() })
+                Result.success(reservantApi.getAllReservants().map { it.toReservantOption() })
             } catch (throwable: Throwable) {
                 Result.failure(
                     when (throwable) {
@@ -88,7 +90,7 @@ class ReservationRepositoryImpl(
     override suspend fun getZonesForFestival(festivalId: Long): Result<List<ZoneTarifaire>> =
         withContext(Dispatchers.IO) {
             try {
-                val remoteZones = festivalApi.getAllZones(festivalId).map { it.toDomain() }
+                val remoteZones = festivalApi.getAllZones(festivalId).map { it.toZoneTarifaire() }
                 if (remoteZones.isNotEmpty()) {
                     Result.success(remoteZones)
                 } else {
