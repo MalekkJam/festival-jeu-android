@@ -22,10 +22,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,9 +38,17 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.example.festivaljeumobile.FestivalApp
+import com.example.festivaljeumobile.data.service.AuthService
+import com.example.festivaljeumobile.di.ServiceLocator
+import com.example.festivaljeumobile.domain.model.User
+import com.example.festivaljeumobile.domain.model.UserRole
 import com.example.festivaljeumobile.ui.screens.auth.AuthScreen
 import com.example.festivaljeumobile.ui.screens.festival.FestivalFormScreen
 import com.example.festivaljeumobile.ui.screens.festival.FestivalScreen
+import com.example.festivaljeumobile.ui.screens.jeu.JeuFormScreen
+import com.example.festivaljeumobile.ui.screens.jeu.JeuListScreen
+import com.example.festivaljeumobile.ui.screens.user.UserFormScreen
+import com.example.festivaljeumobile.ui.screens.user.UserListScreen
 import com.example.festivaljeumobile.ui.screens.reservation.ReservationFormScreen
 import com.example.festivaljeumobile.ui.screens.reservation.ReservationScreen
 import com.example.festivaljeumobile.viewModel.auth.AuthEvent
@@ -47,14 +56,15 @@ import com.example.festivaljeumobile.viewModel.auth.AuthViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.example.festivaljeumobile.di.ServiceLocator
-import com.example.festivaljeumobile.ui.screens.jeu.JeuListScreen
-import com.example.festivaljeumobile.ui.screens.jeu.JeuFormScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppNavHost(isAdmin: Boolean = false) {
+fun AppNavHost() {
     val context = LocalContext.current.applicationContext
+    val authService = AuthService.getInstance()
+    val currentUser by authService.currentUser.collectAsState()
+    val isAdmin = currentUser?.role == UserRole.Admin
+
     val startDestination by produceState<NavKey?>(initialValue = null, context) {
         value = withContext(Dispatchers.IO) {
             val app = context as FestivalApp
@@ -71,16 +81,24 @@ fun AppNavHost(isAdmin: Boolean = false) {
     if (startDestination == null) {
         Box(
             modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             CircularProgressIndicator()
         }
         return
     }
 
-    val backStack = rememberNavBackStack(startDestination!!);
+    val backStack = rememberNavBackStack(startDestination!!)
     val currentDestination = backStack.lastOrNull()
     val showNavBar = currentDestination != null && currentDestination !is Login
+
+    // Destinations qui affichent la flèche retour au lieu du menu hamburger
+    val isDetailDestination = currentDestination is FestivalForm
+            || currentDestination is FestivalDetails
+            || currentDestination is UserCreate
+            || currentDestination is UserEdit
+
+    val showDrawer = showNavBar && !isDetailDestination
     val showDrawer = currentDestination != null &&
         currentDestination !is Login &&
         currentDestination !is FestivalForm &&
@@ -99,7 +117,6 @@ fun AppNavHost(isAdmin: Boolean = false) {
                     backStack.clear()
                     backStack.add(Festivals)
                 }
-                // Manage the logout call
                 is AuthEvent.NavigateToLogin -> {
                     backStack.clear()
                     backStack.add(Login)
@@ -117,12 +134,12 @@ fun AppNavHost(isAdmin: Boolean = false) {
                 Text(
                     text = "Menu",
                     style = androidx.compose.material3.MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
+                    modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
                 )
                 NavBarDestination.entries
                     .filter { destination ->
                         (!destination.adminOnly || isAdmin) &&
-                            (!isOffline || destination != NavBarDestination.LOGOUT)
+                                (!isOffline || destination != NavBarDestination.LOGOUT)
                     }
                     .forEach { destination ->
                         NavigationDrawerItem(
@@ -136,11 +153,11 @@ fun AppNavHost(isAdmin: Boolean = false) {
                                 backStack.clear()
                                 backStack.add(destination.route)
                                 scope.launch { drawerState.close() }
-                            }
+                            },
                         )
                     }
             }
-        }
+        },
     ) {
         Scaffold(
             topBar = {
@@ -161,22 +178,21 @@ fun AppNavHost(isAdmin: Boolean = false) {
                                     Icon(Icons.Default.Menu, contentDescription = "Menu")
                                 }
                             }
-                        }
+                        },
                     )
                 }
-            }
+            },
         ) { innerPadding ->
             NavDisplay(
                 backStack = backStack,
                 modifier = Modifier.padding(innerPadding),
                 onBack = { backStack.removeLastOrNull() },
                 entryProvider = entryProvider {
-                    entry<Login> { AuthScreen(viewModel = authViewModel)}
+                    entry<Login> { AuthScreen(viewModel = authViewModel) }
+
                     entry<Festivals> {
                         FestivalScreen(
-                            onAddFestivalClick = {
-                                backStack.add(FestivalForm())
-                            },
+                            onAddFestivalClick = { backStack.add(FestivalForm()) },
                             onFestivalClick = { festival ->
                                 backStack.add(
                                     FestivalDetails(
@@ -185,7 +201,7 @@ fun AppNavHost(isAdmin: Boolean = false) {
                                         date_debut = festival.date_debut,
                                         date_fin = festival.date_fin,
                                         nbTables = festival.nbTables,
-                                        zoneTarifaires = festival.zoneTarifaires
+                                        zoneTarifaires = festival.zoneTarifaires,
                                     )
                                 )
                             },
@@ -197,23 +213,25 @@ fun AppNavHost(isAdmin: Boolean = false) {
                                         date_debut = festival.date_debut,
                                         date_fin = festival.date_fin,
                                         nbTables = festival.nbTables,
-                                        zoneTarifaires = festival.zoneTarifaires
+                                        zoneTarifaires = festival.zoneTarifaires,
                                     )
                                 )
-                            }
+                            },
                         )
                     }
+
                     entry<FestivalForm> { festivalForm ->
                         FestivalFormScreen(
                             initialFestival = festivalForm.toFestivalOrNull(),
-                            onBackClick = { backStack.removeLastOrNull() }
+                            onBackClick = { backStack.removeLastOrNull() },
                         )
                     }
+
                     entry<FestivalDetails> { festivalDetails ->
                         FestivalFormScreen(
                             initialFestival = festivalDetails.toFestivalOrNull(),
                             readOnly = true,
-                            onBackClick = { backStack.removeLastOrNull() }
+                            onBackClick = { backStack.removeLastOrNull() },
                         )
                     }
                     entry<Reservations> {
@@ -233,60 +251,92 @@ fun AppNavHost(isAdmin: Boolean = false) {
                         )
                     }
                     entry<Jeux> {
-                        val viewModel = remember { ServiceLocator.createJeuListViewModel() }
+                        val jeuListViewModel = remember { ServiceLocator.createJeuListViewModel() }
                         JeuListScreen(
-                            viewModel = viewModel,
-                            onJeuClick = { jeuId ->
-                                // À implémenter si JeuDetailScreen existe
-                            },
-                            onAddJeuClick = {
-                                backStack.add(JeuForm)
-                            },
-                            onEditJeuClick = { jeuId ->
-                                backStack.add(JeuEditForm(jeuId))
-                            }
+                            viewModel = jeuListViewModel,
+                            onJeuClick = {},
+                            onAddJeuClick = { backStack.add(JeuForm) },
+                            onEditJeuClick = { jeuId -> backStack.add(JeuEditForm(jeuId)) },
                         )
                     }
+
                     entry<JeuForm> {
-                        val viewModel = remember { ServiceLocator.createJeuFormViewModel() }
+                        val jeuFormViewModel = remember { ServiceLocator.createJeuFormViewModel() }
                         JeuFormScreen(
-                            viewModel = viewModel,
+                            viewModel = jeuFormViewModel,
                             onNavigateBack = { backStack.removeLastOrNull() },
-                            onSuccessNavigateBack = {
-                                backStack.removeLastOrNull()
-                            }
+                            onSuccessNavigateBack = { backStack.removeLastOrNull() },
                         )
                     }
+
                     entry<JeuEditForm> { jeuEditForm ->
-                        val viewModel = remember { ServiceLocator.createJeuFormViewModel() }
+                        val jeuFormViewModel = remember { ServiceLocator.createJeuFormViewModel() }
                         JeuFormScreen(
                             jeuId = jeuEditForm.jeuId,
-                            viewModel = viewModel,
+                            viewModel = jeuFormViewModel,
                             onNavigateBack = { backStack.removeLastOrNull() },
-                            onSuccessNavigateBack = {
-                                backStack.removeLastOrNull()
-                            }
+                            onSuccessNavigateBack = { backStack.removeLastOrNull() },
+                        )
+                    }
+
+                    // ── Gestion des utilisateurs (Admin uniquement) ──────────────────────
+
+                    entry<UserList> {
+                        val userListViewModel = remember { ServiceLocator.createUserListViewModel() }
+                        UserListScreen(
+                            viewModel = userListViewModel,
+                            onAddUserClick = { backStack.add(UserCreate) },
+                            onEditUserClick = { user ->
+                                backStack.add(
+                                    UserEdit(
+                                        id = user.id?.toLong() ?: return@UserListScreen,
+                                        login = user.login,
+                                        prenom = user.prenom ?: "",
+                                        nom = user.nom ?: "",
+                                        role = user.role,
+                                    )
+                                )
+                            },
+                        )
+                    }
+
+                    entry<UserCreate> {
+                        val userFormViewModel = remember { ServiceLocator.createUserFormViewModel() }
+                        UserFormScreen(
+                            initialUser = null,
+                            onBackClick = { backStack.removeLastOrNull() },
+                            viewModel = userFormViewModel,
+                        )
+                    }
+
+                    entry<UserEdit> { userEdit ->
+                        val userFormViewModel = remember { ServiceLocator.createUserFormViewModel() }
+                        UserFormScreen(
+                            initialUser = userEdit.toUser(),
+                            onBackClick = { backStack.removeLastOrNull() },
+                            viewModel = userFormViewModel,
                         )
                     }
                     entry<Benevoles> { Text("Bénévoles") }
                     entry<Editeurs> { Text("Éditeurs") }
                     entry<Reservants> { Text("Réservants") }
                     entry<Admin> { Text("Admin") }
-                    entry <Logout> { Text("Logout") }
-                }
+                    entry<Logout> { Text("Logout") }
+                },
             )
         }
     }
 }
+
+// ── Extensions privées ───────────────────────────────────────────────────────
 
 private fun Context.isOnline(): Boolean {
     val connectivityManager =
         getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     val network = connectivityManager.activeNetwork ?: return false
     val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-
     return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
-        capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
 }
 
 private fun FestivalForm.toFestivalOrNull() =
@@ -297,7 +347,7 @@ private fun FestivalForm.toFestivalOrNull() =
             date_debut = date_debut,
             date_fin = date_fin,
             nbTables = nbTables,
-            zoneTarifaires = zoneTarifaires
+            zoneTarifaires = zoneTarifaires,
         )
     }
 
@@ -309,6 +359,14 @@ private fun FestivalDetails.toFestivalOrNull() =
             date_debut = date_debut,
             date_fin = date_fin,
             nbTables = nbTables,
-            zoneTarifaires = zoneTarifaires
+            zoneTarifaires = zoneTarifaires,
         )
     }
+
+private fun UserEdit.toUser() = User(
+    id = id.toInt(),
+    login = login,
+    prenom = prenom.ifBlank { null },
+    nom = nom.ifBlank { null },
+    role = role,
+)
