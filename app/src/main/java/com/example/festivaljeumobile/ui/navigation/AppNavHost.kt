@@ -28,9 +28,13 @@ import com.example.festivaljeumobile.ui.screens.auth.AuthScreen
 import com.example.festivaljeumobile.viewModel.auth.AuthEvent
 import com.example.festivaljeumobile.viewModel.auth.AuthViewModel
 import kotlinx.coroutines.launch
-import com.example.festivaljeumobile.di.ServiceLocator
 import com.example.festivaljeumobile.ui.screens.jeu.JeuListScreen
 import com.example.festivaljeumobile.ui.screens.jeu.JeuFormScreen
+import com.example.festivaljeumobile.data.remote.RetrofitInstance
+import com.example.festivaljeumobile.data.remote.api.JeuApi
+import com.example.festivaljeumobile.data.repository.JeuRepositoryImpl
+import com.example.festivaljeumobile.viewModel.jeu.JeuListViewModel
+import com.example.festivaljeumobile.viewModel.jeu.JeuFormViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,6 +46,10 @@ fun AppNavHost(isAdmin: Boolean = false) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val authViewModel: AuthViewModel = viewModel()
     val scope = rememberCoroutineScope()
+
+    // Injecter les dépendances directement
+    val jeuApi = remember { RetrofitInstance.retrofit.create(JeuApi::class.java) }
+    val jeuRepository = remember { JeuRepositoryImpl(jeuApi) }
 
     LaunchedEffect(Unit) {
         authViewModel.events.collect { event ->
@@ -112,7 +120,7 @@ fun AppNavHost(isAdmin: Boolean = false) {
                     entry<Login> { AuthScreen(viewModel = authViewModel)}
                     entry<Festivals> { Text("Festivals") }
                     entry<Jeux> {
-                        val viewModel = remember { ServiceLocator.createJeuListViewModel() }
+                        val viewModel = remember { JeuListViewModel(jeuRepository) }
                         JeuListScreen(
                             viewModel = viewModel,
                             onJeuClick = { jeuId ->
@@ -127,7 +135,7 @@ fun AppNavHost(isAdmin: Boolean = false) {
                         )
                     }
                     entry<JeuForm> {
-                        val viewModel = remember { ServiceLocator.createJeuFormViewModel() }
+                        val viewModel = remember { JeuFormViewModel(jeuRepository) }
                         JeuFormScreen(
                             viewModel = viewModel,
                             onNavigateBack = { backStack.removeLastOrNull() },
@@ -137,7 +145,7 @@ fun AppNavHost(isAdmin: Boolean = false) {
                         )
                     }
                     entry<JeuEditForm> { jeuEditForm ->
-                        val viewModel = remember { ServiceLocator.createJeuFormViewModel() }
+                        val viewModel = remember { JeuFormViewModel(jeuRepository) }
                         JeuFormScreen(
                             jeuId = jeuEditForm.jeuId,
                             viewModel = viewModel,
