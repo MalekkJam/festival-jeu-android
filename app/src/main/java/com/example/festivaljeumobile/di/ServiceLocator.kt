@@ -6,7 +6,6 @@ import com.example.festivaljeumobile.data.remote.RetrofitInstance
 import com.example.festivaljeumobile.domain.repository.JeuRepository
 import com.example.festivaljeumobile.viewModel.jeu.JeuListViewModel
 import com.example.festivaljeumobile.viewModel.jeu.JeuFormViewModel
-import com.example.festivaljeumobile.data.service.AuthService
 
 object ServiceLocator {
 
@@ -24,9 +23,5 @@ object ServiceLocator {
 
     fun createJeuFormViewModel(): JeuFormViewModel {
         return JeuFormViewModel(jeuRepository)
-    }
-
-    fun getAuthService(): AuthService {
-        return AuthService.getInstance()
     }
 }

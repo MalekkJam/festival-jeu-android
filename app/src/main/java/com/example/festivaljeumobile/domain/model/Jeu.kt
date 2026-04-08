@@ -1,9 +1,12 @@
 package com.example.festivaljeumobile.domain.model
 
+import kotlinx.serialization.Serializable
+
 /**
  * Entité métier Jeu (pure, sans annotations Room/Retrofit)
  * Conforme à la règle DIP - Domain Layer indépendante des sources de données
  */
+@Serializable
 data class Jeu(
     val idJeu: Int,
     val libelleJeu: String,
