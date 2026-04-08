@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -27,6 +28,9 @@ import com.example.festivaljeumobile.ui.screens.auth.AuthScreen
 import com.example.festivaljeumobile.viewModel.auth.AuthEvent
 import com.example.festivaljeumobile.viewModel.auth.AuthViewModel
 import kotlinx.coroutines.launch
+import com.example.festivaljeumobile.di.ServiceLocator
+import com.example.festivaljeumobile.ui.screens.jeu.JeuListScreen
+import com.example.festivaljeumobile.ui.screens.jeu.JeuFormScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -107,7 +111,42 @@ fun AppNavHost(isAdmin: Boolean = false) {
                 entryProvider = entryProvider {
                     entry<Login> { AuthScreen(viewModel = authViewModel)}
                     entry<Festivals> { Text("Festivals") }
-                    entry<Jeux> { Text("Jeux") }
+                    entry<Jeux> {
+                        val viewModel = remember { ServiceLocator.createJeuListViewModel() }
+                        JeuListScreen(
+                            viewModel = viewModel,
+                            onJeuClick = { jeuId ->
+                                // À implémenter si JeuDetailScreen existe
+                            },
+                            onAddJeuClick = {
+                                backStack.add(JeuForm)
+                            },
+                            onEditJeuClick = { jeuId ->
+                                backStack.add(JeuEditForm(jeuId))
+                            }
+                        )
+                    }
+                    entry<JeuForm> {
+                        val viewModel = remember { ServiceLocator.createJeuFormViewModel() }
+                        JeuFormScreen(
+                            viewModel = viewModel,
+                            onNavigateBack = { backStack.removeLastOrNull() },
+                            onSuccessNavigateBack = {
+                                backStack.removeLastOrNull()
+                            }
+                        )
+                    }
+                    entry<JeuEditForm> { jeuEditForm ->
+                        val viewModel = remember { ServiceLocator.createJeuFormViewModel() }
+                        JeuFormScreen(
+                            jeuId = jeuEditForm.jeuId,
+                            viewModel = viewModel,
+                            onNavigateBack = { backStack.removeLastOrNull() },
+                            onSuccessNavigateBack = {
+                                backStack.removeLastOrNull()
+                            }
+                        )
+                    }
                     entry<Reservations> { Text("Réservations") }
                     entry<Benevoles> { Text("Bénévoles") }
                     entry<Editeurs> { Text("Éditeurs") }

@@ -3,10 +3,7 @@ package com.example.festivaljeumobile.viewModel.auth
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.festivaljeumobile.data.remote.RetrofitInstance
-import com.example.festivaljeumobile.data.remote.api.AuthApi
-import com.example.festivaljeumobile.data.repository.AuthRepositoryImpl
-import com.example.festivaljeumobile.domain.repository.AuthRepository
+import com.example.festivaljeumobile.data.service.AuthService
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,9 +25,7 @@ sealed class AuthEvent {
 }
 
 class AuthViewModel(
-    private val authRepository: AuthRepository = AuthRepositoryImpl(
-        RetrofitInstance.retrofit.create(AuthApi::class.java)
-    )
+    private val authService: AuthService = AuthService.getInstance()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<AuthUiState>(AuthUiState.Idle)
@@ -66,7 +61,7 @@ class AuthViewModel(
 
         viewModelScope.launch {
             _uiState.value = AuthUiState.Loading
-            authRepository.login(login, password).fold(
+            authService.login(login, password).fold(
                 onSuccess = {
 
                     _login.value = ""
