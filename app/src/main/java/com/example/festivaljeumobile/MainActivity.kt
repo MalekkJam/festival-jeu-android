@@ -28,7 +28,7 @@ class MainActivity : ComponentActivity() {
         
         setContent {
             FestivalJeuMobileTheme {
-                AppContent(authService)
+                AppNavHost()
          }
      }
  }
