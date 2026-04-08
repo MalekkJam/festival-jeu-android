@@ -28,6 +28,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.festivaljeumobile.ui.screens.festival.StatusCard
 import com.example.festivaljeumobile.ui.screens.jeu.components.JeuCard
 import com.example.festivaljeumobile.viewModel.jeu.JeuListViewModel
 
@@ -41,7 +42,8 @@ fun JeuListScreen(
     viewModel: JeuListViewModel,
     onJeuClick: (Int) -> Unit = {},
     onAddJeuClick: () -> Unit = {},
-    onEditJeuClick: (Int) -> Unit = {}
+    onEditJeuClick: (Int) -> Unit = {},
+    canManageGames: Boolean = true,
 ) {
     val uiState = viewModel.uiState.collectAsState()
     val state = uiState.value
@@ -61,8 +63,10 @@ fun JeuListScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onAddJeuClick) {
-                Icon(Icons.Filled.Add, contentDescription = "Ajouter un jeu")
+            if (canManageGames && !state.isOffline) {
+                FloatingActionButton(onClick = onAddJeuClick) {
+                    Icon(Icons.Filled.Add, contentDescription = "Ajouter un jeu")
+                }
             }
         }
     ) { paddingValues ->
@@ -71,6 +75,15 @@ fun JeuListScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            if (state.isOffline) {
+                StatusCard(
+                    text = "Mode hors ligne : affichage du cache local.",
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                )
+            }
+
             // Barre de recherche
             OutlinedTextField(
                 value = state.searchQuery,
@@ -95,7 +108,7 @@ fun JeuListScreen(
             }
 
             // Indicateur de chargement
-            if (state.isLoading) {
+            if (state.isLoading && state.jeux.isEmpty()) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -133,7 +146,8 @@ fun JeuListScreen(
                             jeu = jeu,
                             onCardClick = { onJeuClick(jeu.idJeu) },
                             onEditClick = { onEditJeuClick(jeu.idJeu) },
-                            onDeleteClick = { viewModel.deleteJeu(jeu.idJeu, jeu.libelleJeu) }
+                            onDeleteClick = { viewModel.deleteJeu(jeu.idJeu, jeu.libelleJeu) },
+                            showActions = canManageGames && !state.isOffline
                         )
                     }
                 }

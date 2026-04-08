@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.example.festivaljeumobile.domain.model.UserRole
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -38,6 +39,22 @@ class CookieDataStore(
     suspend fun hasValidCookies(): Boolean =
         readCookies().values.any { cookies -> cookies.isNotEmpty() }
 
+    suspend fun readUserRole(): UserRole? {
+        val preferences = context.cookieDataStore.data.first()
+        val roleValue = preferences[USER_ROLE_KEY] ?: return null
+        return runCatching { UserRole.valueOf(roleValue) }.getOrNull()
+    }
+
+    suspend fun writeUserRole(role: UserRole?) {
+        context.cookieDataStore.edit { preferences ->
+            if (role == null) {
+                preferences.remove(USER_ROLE_KEY)
+            } else {
+                preferences[USER_ROLE_KEY] = role.name
+            }
+        }
+    }
+
     suspend fun writeCookies(cookiesByHost: Map<String, List<Cookie>>) {
         context.cookieDataStore.edit { preferences ->
             clearCookiePreferences(preferences)
@@ -50,6 +67,7 @@ class CookieDataStore(
     suspend fun clearCookies() {
         context.cookieDataStore.edit { preferences ->
             clearCookiePreferences(preferences)
+            preferences.remove(USER_ROLE_KEY)
         }
     }
 
@@ -119,5 +137,6 @@ class CookieDataStore(
 
     companion object {
         private const val COOKIE_PREFIX = "cookie_"
+        private val USER_ROLE_KEY = stringPreferencesKey("user_role")
     }
 }

@@ -32,7 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -65,10 +64,14 @@ import kotlinx.coroutines.withContext
 fun AppNavHost() {
     val context = LocalContext.current.applicationContext
     val app = context as FestivalApp
+    val hasSessionCookie by produceState(initialValue = false, context) {
+        value = withContext(Dispatchers.IO) {
+            app.cookieDataStore.hasValidCookies()
+        }
+    }
 
     val startDestination by produceState<NavKey?>(initialValue = null, context) {
         value = withContext(Dispatchers.IO) {
-            val hasSessionCookie = app.cookieDataStore.hasValidCookies()
             when {
                 hasSessionCookie -> Festivals
                 context.isOnline() -> Login
@@ -90,11 +93,20 @@ fun AppNavHost() {
 
     val backStack = rememberNavBackStack(startDestination!!)
     val currentDestination = backStack.lastOrNull()
-    val currentUserRole by produceState<UserRole?>(initialValue = null, context, currentDestination) {
+    val currentUserRole by produceState<UserRole?>(initialValue = null, context, currentDestination, hasSessionCookie) {
         value = withContext(Dispatchers.IO) {
-            app.authRepository.whoAmI()
-                .getOrNull()
-                ?.role
+            if (!hasSessionCookie) {
+                null
+            } else {
+                val cachedRole = app.cookieDataStore.readUserRole()
+                if (!context.isOnline()) {
+                    cachedRole
+                } else {
+                    app.authRepository.whoAmI()
+                        .getOrNull()
+                        ?.role ?: cachedRole
+                }
+            }
         }
     }
     val showNavBar = currentDestination != null && currentDestination !is Login
@@ -108,12 +120,24 @@ fun AppNavHost() {
     val showDrawer = showNavBar && !isDetailDestination
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val authViewModel: AuthViewModel = viewModel()
+    val authViewModel = remember { AuthViewModel(app.authRepository) }
     val jeuListViewModel = remember { JeuListViewModel(app.jeuRepository) }
     val userListViewModel = remember { UserListViewModel(app.userRepository) }
     val scope = rememberCoroutineScope()
     val isOffline = !context.isOnline()
-    val isAdmin = currentUserRole == UserRole.Admin
+    val canManageGames = currentUserRole in setOf(
+        UserRole.Admin,
+        UserRole.SuperOrganisateur,
+        UserRole.Organisateur,
+    )
+    val canManageFestivals = currentUserRole in setOf(
+        UserRole.Admin,
+        UserRole.SuperOrganisateur,
+    )
+    val canManageReservations = currentUserRole in setOf(
+        UserRole.Admin,
+        UserRole.SuperOrganisateur,
+    )
 
     LaunchedEffect(Unit) {
         authViewModel.events.collect { event ->
@@ -143,7 +167,7 @@ fun AppNavHost() {
                 )
                 NavBarDestination.entries
                     .filter { destination ->
-                        (!destination.adminOnly || isAdmin) &&
+                        destination.isVisibleFor(currentUserRole) &&
                             (!isOffline || destination != NavBarDestination.LOGOUT)
                     }
                     .forEach { destination ->
@@ -221,6 +245,7 @@ fun AppNavHost() {
                                     )
                                 )
                             },
+                            canManageFestivals = canManageFestivals,
                         )
                     }
 
@@ -247,6 +272,7 @@ fun AppNavHost() {
                             onEditReservationClick = { reservation ->
                                 backStack.add(ReservationForm(reservation = reservation))
                             },
+                            canManageReservations = canManageReservations,
                         )
                     }
 
@@ -263,6 +289,7 @@ fun AppNavHost() {
                             onJeuClick = {},
                             onAddJeuClick = { backStack.add(JeuForm) },
                             onEditJeuClick = { jeuId -> backStack.add(JeuEditForm(jeuId)) },
+                            canManageGames = canManageGames,
                         )
                     }
 
@@ -388,3 +415,21 @@ private fun UserEdit.toUser() = User(
     nom = nom.ifBlank { null },
     role = role,
 )
+
+private fun NavBarDestination.isVisibleFor(role: UserRole?): Boolean =
+    when (role) {
+        UserRole.Admin -> true
+        UserRole.SuperOrganisateur -> this != NavBarDestination.ADMIN
+        UserRole.Organisateur -> this in setOf(
+            NavBarDestination.FESTIVALS,
+            NavBarDestination.JEUX,
+            NavBarDestination.RESERVATIONS,
+            NavBarDestination.LOGOUT,
+        )
+        else -> this in setOf(
+            NavBarDestination.FESTIVALS,
+            NavBarDestination.JEUX,
+            NavBarDestination.RESERVATIONS,
+            NavBarDestination.LOGOUT,
+        )
+    }

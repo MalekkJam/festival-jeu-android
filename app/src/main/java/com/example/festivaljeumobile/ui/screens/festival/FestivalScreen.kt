@@ -41,6 +41,7 @@ fun FestivalScreen(
     onAddFestivalClick: () -> Unit,
     onFestivalClick: (Festival) -> Unit,
     onEditFestivalClick: (Festival) -> Unit,
+    canManageFestivals: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val festivalViewModel: FestivalListViewModel = viewModel()
@@ -53,6 +54,7 @@ fun FestivalScreen(
         onEditFestivalClick = onEditFestivalClick,
         onDeleteFestivalClick = festivalViewModel::deleteFestival,
         onRetryClick = festivalViewModel::refreshFestivals,
+        canManageFestivals = canManageFestivals,
         modifier = modifier
     )
 }
@@ -78,7 +80,8 @@ private fun FestivalScreenPreview() {
             onFestivalClick = {},
             onEditFestivalClick = {},
             onDeleteFestivalClick = {},
-            onRetryClick = {}
+            onRetryClick = {},
+            canManageFestivals = true
         )
     }
 }

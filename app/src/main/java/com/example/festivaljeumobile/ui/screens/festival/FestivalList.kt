@@ -37,6 +37,7 @@ fun FestivalList(
     onEditFestivalClick: (Festival) -> Unit,
     onDeleteFestivalClick: (Festival) -> Unit,
     onRetryClick: () -> Unit,
+    canManageFestivals: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -44,7 +45,7 @@ fun FestivalList(
             .fillMaxSize()
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        if (!uiState.isOffline) {
+        if (canManageFestivals && !uiState.isOffline) {
             Button(
                 onClick = onAddFestivalClick,
                 modifier = Modifier.fillMaxWidth()
@@ -149,8 +150,8 @@ fun FestivalList(
                     ) { festival ->
                         FestivalCard(
                             festival = festival,
-                            canUpdate = !uiState.isOffline,
-                            canDelete = !uiState.isOffline,
+                            canUpdate = canManageFestivals && !uiState.isOffline,
+                            canDelete = canManageFestivals && !uiState.isOffline,
                             isDeleting = uiState.deletingFestivalId == festival.id,
                             onClick = { onFestivalClick(festival) },
                             onUpdateClick = { onEditFestivalClick(festival) },

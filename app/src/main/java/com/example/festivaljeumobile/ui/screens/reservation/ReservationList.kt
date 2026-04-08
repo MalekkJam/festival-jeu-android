@@ -42,6 +42,7 @@ fun ReservationList(
     onEditReservationClick: (Reservation) -> Unit,
     onDeleteReservationClick: (Long?) -> Unit,
     onRetryClick: () -> Unit,
+    canManageReservations: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -49,7 +50,7 @@ fun ReservationList(
             .fillMaxSize()
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        if (!uiState.isOffline) {
+        if (canManageReservations && !uiState.isOffline) {
             Button(
                 onClick = onAddReservationClick,
                 modifier = Modifier.fillMaxWidth()
@@ -139,7 +140,7 @@ fun ReservationList(
                     ) { reservation ->
                         ReservationCard(
                             reservation = reservation,
-                            canUpdate = !uiState.isOffline,
+                            canUpdate = canManageReservations && !uiState.isOffline,
                             isDeleting = uiState.deletingReservationId == reservation.id,
                             onUpdateClick = { onEditReservationClick(reservation) },
                             onDeleteClick = { onDeleteReservationClick(reservation.id) }

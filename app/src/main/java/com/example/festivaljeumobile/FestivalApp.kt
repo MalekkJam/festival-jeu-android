@@ -66,11 +66,14 @@ class FestivalApp : Application() {
     }
 
     val authRepository by lazy {
-        AuthRepositoryImpl(authApi)
+        AuthRepositoryImpl(authApi, cookieDataStore)
     }
 
     val jeuRepository by lazy {
-        JeuRepositoryImpl(jeuApi)
+        JeuRepositoryImpl(
+            jeuApi = jeuApi,
+            jeuDao = festivalDatabase.jeuDao(),
+        )
     }
 
     val userRepository by lazy {

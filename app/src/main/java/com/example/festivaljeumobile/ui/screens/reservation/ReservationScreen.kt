@@ -12,6 +12,7 @@ import com.example.festivaljeumobile.viewModel.reservation.ReservationListViewMo
 fun ReservationScreen(
     onAddReservationClick: () -> Unit,
     onEditReservationClick: (Reservation) -> Unit,
+    canManageReservations: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val reservationViewModel: ReservationListViewModel = viewModel()
@@ -23,6 +24,7 @@ fun ReservationScreen(
         onEditReservationClick = onEditReservationClick,
         onDeleteReservationClick = reservationViewModel::deleteReservation,
         onRetryClick = reservationViewModel::refreshReservations,
+        canManageReservations = canManageReservations,
         modifier = modifier
     )
 }
