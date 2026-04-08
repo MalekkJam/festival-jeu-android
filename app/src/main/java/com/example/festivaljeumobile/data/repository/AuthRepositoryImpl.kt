@@ -43,7 +43,7 @@ class AuthRepositoryImpl(
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!
                 Result.success(User(
-                    id = body.user.id,
+                    id = body.user.id.toInt(),
                     login = body.user.login ?: "Unknown",
                     role = body.user.role
                 ))

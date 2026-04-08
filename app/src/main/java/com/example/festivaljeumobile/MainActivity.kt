@@ -45,12 +45,7 @@ fun AppContent(authService: AuthService) {
         }
         false -> {
             // User is not logged in
-            AuthScreen(
-                onLoginSuccess = { 
-                    // After login, AuthService state is updated automatically
-                    // The UI will recompose and show AppNavHost
-                }
-            )
+            AuthScreen()
         }
     }
 }

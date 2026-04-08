@@ -84,7 +84,7 @@ class AuthViewModel(
         _password.value = ""
         viewModelScope.launch {
             _uiState.value = AuthUiState.Idle
-            authRepository.logout().fold(
+            authService.logout().fold(
                 onSuccess = {
                     _events.send(AuthEvent.NavigateToLogin)
                 },
