@@ -21,6 +21,12 @@ interface FestivalApi {
     @POST("/api/festival/addFestival")
     suspend fun addFestival(@Body festival: FestivalDto): FestivalDto
 
+    @POST("/api/zoneTarifaire/addZone/{festivalId}")
+    suspend fun addZone(
+        @Path("festivalId") festivalId: Long,
+        @Body zone: ZoneTarifaireDto
+    ): ZoneTarifaireDto
+
     @PUT("/api/festival/updateFestival")
     suspend fun updateFestival(@Body festival: FestivalDto): FestivalDto
 

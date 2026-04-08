@@ -31,7 +31,7 @@ fun FestivalDto.toEntity(): FestivalEntity =
         date_debut = date_debut,
         date_fin = date_fin,
         nbTables = nbTables ?: zones.sumOf { it.nbTables },
-        zoneTarifaires = zones.map { it.toDomain() }
+        zoneTarifaires = zones.map { it.toZoneTarifaire() }
     )
 
 @Serializable
@@ -57,7 +57,7 @@ fun Festival.toDto(): FestivalDto =
         zones = zoneTarifaires.map { it.toDto() }
     )
 
-fun ZoneTarifaireDto.toDomain(): ZoneTarifaire =
+fun ZoneTarifaireDto.toZoneTarifaire(): ZoneTarifaire =
     ZoneTarifaire(
         id = id,
         nom = nom,

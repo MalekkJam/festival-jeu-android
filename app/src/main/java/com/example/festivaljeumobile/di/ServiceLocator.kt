@@ -38,16 +38,4 @@ object ServiceLocator {
     fun createJeuFormViewModel(): JeuFormViewModel {
         return JeuFormViewModel(jeuRepository)
     }
-
-    fun createUserListViewModel(): UserListViewModel {
-        return UserListViewModel(userRepository)
-    }
-
-    fun createUserFormViewModel(): UserFormViewModel {
-        return UserFormViewModel(userRepository)
-    }
-
-    fun getAuthService(): AuthService {
-        return AuthService.getInstance()
-    }
 }
