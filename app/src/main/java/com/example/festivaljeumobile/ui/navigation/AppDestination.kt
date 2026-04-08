@@ -34,8 +34,6 @@ data class FestivalDetails(
 @Serializable data class ReservationForm(
     val reservation: Reservation? = null,
 ) : NavKey
-@Serializable object Benevoles : NavKey
-@Serializable object Editeurs : NavKey
 @Serializable object Reservants : NavKey
 @Serializable object Admin : NavKey
 @Serializable object Logout : NavKey

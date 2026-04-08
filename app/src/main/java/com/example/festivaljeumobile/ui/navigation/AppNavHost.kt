@@ -268,8 +268,6 @@ fun AppNavHost(isAdmin: Boolean = false) {
                             }
                         )
                     }
-                    entry<Benevoles> { Text("Bénévoles") }
-                    entry<Editeurs> { Text("Éditeurs") }
                     entry<Reservants> { Text("Réservants") }
                     entry<Admin> { Text("Admin") }
                     entry <Logout> { Text("Logout") }
