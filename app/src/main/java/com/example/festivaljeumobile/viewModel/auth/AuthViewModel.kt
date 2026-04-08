@@ -3,7 +3,10 @@ package com.example.festivaljeumobile.viewModel.auth
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.festivaljeumobile.data.service.AuthService
+import com.example.festivaljeumobile.data.remote.RetrofitInstance
+import com.example.festivaljeumobile.data.remote.api.AuthApi
+import com.example.festivaljeumobile.data.repository.AuthRepositoryImpl
+import com.example.festivaljeumobile.domain.repository.AuthRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,7 +28,9 @@ sealed class AuthEvent {
 }
 
 class AuthViewModel(
-    private val authService: AuthService = AuthService.getInstance()
+    private val authRepository: AuthRepository = AuthRepositoryImpl(
+        RetrofitInstance.retrofit.create(AuthApi::class.java)
+    )
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<AuthUiState>(AuthUiState.Idle)
@@ -61,9 +66,8 @@ class AuthViewModel(
 
         viewModelScope.launch {
             _uiState.value = AuthUiState.Loading
-            authService.login(login, password).fold(
+            authRepository.login(login, password).fold(
                 onSuccess = {
-
                     _login.value = ""
                     _password.value = ""
                     _events.send(AuthEvent.NavigateToHome)
@@ -87,13 +91,15 @@ class AuthViewModel(
             _uiState.value = AuthUiState.Idle
             authService.logout().fold(
                 onSuccess = {
+                    RetrofitInstance.clearCookies()
                     _events.send(AuthEvent.NavigateToLogin)
                 },
                 onFailure = {
                     // même en cas d'erreur on déconnecte localement
+                    RetrofitInstance.clearCookies()
                     _events.send(AuthEvent.NavigateToLogin)
                 }
             )
         }
     }
- }
+}

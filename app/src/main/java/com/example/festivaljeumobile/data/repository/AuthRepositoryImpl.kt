@@ -14,7 +14,7 @@ class AuthRepositoryImpl(
         return try {
             Log.d("LOGIN", "Attempting login...")
             val response = authApi.login(LoginRequestDto(login, password))
-            if (response.isSuccessful && response.body() != null) {
+            if (response.isSuccessful) {
                 Log.d("LOGIN", "Login successful")
                 Result.success(Unit)
             } else {
