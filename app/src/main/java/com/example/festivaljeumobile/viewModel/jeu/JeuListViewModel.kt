@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.festivaljeumobile.domain.model.Jeu
 import com.example.festivaljeumobile.domain.repository.JeuRepository
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,6 +21,7 @@ class JeuListViewModel(
 
     private val _uiState = MutableStateFlow(JeuListUiState())
     val uiState: StateFlow<JeuListUiState> = _uiState.asStateFlow()
+    private var loadJeuxJob: Job? = null
 
     init {
         loadJeux()
@@ -29,7 +31,8 @@ class JeuListViewModel(
      * Charge les jeux depuis le repository
      */
     fun loadJeux() {
-        viewModelScope.launch {
+        loadJeuxJob?.cancel()
+        loadJeuxJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             jeuRepository.getAllJeux().collect { jeux ->
                 _uiState.update {
@@ -46,16 +49,7 @@ class JeuListViewModel(
      * Rafraîchit les jeux depuis l'API
      */
     fun refresh() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-            jeuRepository.refreshJeux()
-                .onSuccess {
-                    loadJeux()
-                }
-                .onFailure { e ->
-                    _uiState.update { it.copy(error = e.message, isLoading = false) }
-                }
-        }
+        loadJeux()
     }
 
     /**
@@ -89,6 +83,14 @@ class JeuListViewModel(
     fun deleteJeu(idJeu: Int, libelleJeu: String) {
         viewModelScope.launch {
             jeuRepository.deleteJeu(idJeu, libelleJeu)
+                .onSuccess {
+                    _uiState.update { current ->
+                        current.copy(
+                            jeux = current.jeux.filterNot { it.idJeu == idJeu },
+                            error = null
+                        )
+                    }
+                }
                 .onFailure { e ->
                     _uiState.update { it.copy(error = e.message) }
                 }

@@ -89,7 +89,7 @@ class AuthViewModel(
         _password.value = ""
         viewModelScope.launch {
             _uiState.value = AuthUiState.Idle
-            authService.logout().fold(
+            authRepository.logout().fold(
                 onSuccess = {
                     RetrofitInstance.clearCookies()
                     _events.send(AuthEvent.NavigateToLogin)

@@ -10,6 +10,7 @@ import com.example.festivaljeumobile.data.remote.api.JeuApi
 import com.example.festivaljeumobile.data.remote.api.ReservationApi
 import com.example.festivaljeumobile.data.remote.api.ReservantApi
 import com.example.festivaljeumobile.data.repository.FestivalRepositoryImpl
+import com.example.festivaljeumobile.data.repository.JeuRepositoryImpl
 import com.example.festivaljeumobile.data.repository.ReservationRepositoryImpl
 
 class FestivalApp : Application() {
@@ -50,6 +51,10 @@ class FestivalApp : Application() {
 
     val jeuApi: JeuApi by lazy {
         RetrofitInstance.retrofit.create(JeuApi::class.java)
+    }
+
+    val jeuRepository by lazy {
+        JeuRepositoryImpl(jeuApi)
     }
 
     val festivalRepository by lazy {

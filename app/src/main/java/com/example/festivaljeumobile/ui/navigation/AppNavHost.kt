@@ -44,10 +44,11 @@ import com.example.festivaljeumobile.ui.screens.reservation.ReservationFormScree
 import com.example.festivaljeumobile.ui.screens.reservation.ReservationScreen
 import com.example.festivaljeumobile.viewModel.auth.AuthEvent
 import com.example.festivaljeumobile.viewModel.auth.AuthViewModel
+import com.example.festivaljeumobile.viewModel.jeu.JeuFormViewModel
+import com.example.festivaljeumobile.viewModel.jeu.JeuListViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.example.festivaljeumobile.di.ServiceLocator
 import com.example.festivaljeumobile.ui.screens.jeu.JeuListScreen
 import com.example.festivaljeumobile.ui.screens.jeu.JeuFormScreen
 
@@ -55,9 +56,9 @@ import com.example.festivaljeumobile.ui.screens.jeu.JeuFormScreen
 @Composable
 fun AppNavHost(isAdmin: Boolean = false) {
     val context = LocalContext.current.applicationContext
+    val app = context as FestivalApp
     val startDestination by produceState<NavKey?>(initialValue = null, context) {
         value = withContext(Dispatchers.IO) {
-            val app = context as FestivalApp
             val hasSessionCookie = app.cookieDataStore.hasValidCookies()
             when {
                 hasSessionCookie -> Festivals
@@ -89,6 +90,7 @@ fun AppNavHost(isAdmin: Boolean = false) {
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val authViewModel: AuthViewModel = viewModel()
+    val jeuListViewModel = remember { JeuListViewModel(app.jeuRepository) }
     val scope = rememberCoroutineScope()
     val isOffline = !context.isOnline()
 
@@ -233,9 +235,8 @@ fun AppNavHost(isAdmin: Boolean = false) {
                         )
                     }
                     entry<Jeux> {
-                        val viewModel = remember { ServiceLocator.createJeuListViewModel() }
                         JeuListScreen(
-                            viewModel = viewModel,
+                            viewModel = jeuListViewModel,
                             onJeuClick = { jeuId ->
                                 // À implémenter si JeuDetailScreen existe
                             },
@@ -248,22 +249,24 @@ fun AppNavHost(isAdmin: Boolean = false) {
                         )
                     }
                     entry<JeuForm> {
-                        val viewModel = remember { ServiceLocator.createJeuFormViewModel() }
+                        val viewModel = remember { JeuFormViewModel(app.jeuRepository) }
                         JeuFormScreen(
                             viewModel = viewModel,
                             onNavigateBack = { backStack.removeLastOrNull() },
                             onSuccessNavigateBack = {
+                                jeuListViewModel.refresh()
                                 backStack.removeLastOrNull()
                             }
                         )
                     }
                     entry<JeuEditForm> { jeuEditForm ->
-                        val viewModel = remember { ServiceLocator.createJeuFormViewModel() }
+                        val viewModel = remember { JeuFormViewModel(app.jeuRepository) }
                         JeuFormScreen(
                             jeuId = jeuEditForm.jeuId,
                             viewModel = viewModel,
                             onNavigateBack = { backStack.removeLastOrNull() },
                             onSuccessNavigateBack = {
+                                jeuListViewModel.refresh()
                                 backStack.removeLastOrNull()
                             }
                         )
