@@ -9,7 +9,7 @@ enum class NavBarDestination(
     val route: NavKey,
     val label: String,
     val icon: ImageVector,
-    val adminOnly: Boolean = false
+    val adminOnly: Boolean = false,
 ) {
     FESTIVALS(Festivals, "Festivals", Icons.Default.Festival),
     JEUX(Jeux, "Jeux", Icons.Default.SportsEsports),
@@ -17,6 +17,6 @@ enum class NavBarDestination(
     BENEVOLES(Benevoles, "Bénévoles", Icons.Default.People),
     EDITEURS(Editeurs, "Éditeurs", Icons.Default.Business),
     RESERVANTS(Reservants, "Réservants", Icons.Default.Person),
-    ADMIN(Admin, "Admin", Icons.Default.AdminPanelSettings, adminOnly = true),
-    LOGOUT(Logout, "Logout", Icons.Default.Logout)
+    USERS(UserList, "Utilisateurs", Icons.Default.ManageAccounts, adminOnly = true),
+    LOGOUT(Logout, "Logout", Icons.Default.Logout),
 }
