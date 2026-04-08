@@ -14,6 +14,7 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
@@ -22,26 +23,38 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.example.festivaljeumobile.FestivalApp
+import com.example.festivaljeumobile.domain.model.User
+import com.example.festivaljeumobile.domain.model.UserRole
+import com.example.festivaljeumobile.ui.screens.admin.AdminScreen
 import com.example.festivaljeumobile.ui.screens.auth.AuthScreen
 import com.example.festivaljeumobile.ui.screens.festival.FestivalFormScreen
 import com.example.festivaljeumobile.ui.screens.festival.FestivalScreen
+import com.example.festivaljeumobile.ui.screens.jeu.JeuFormScreen
+import com.example.festivaljeumobile.ui.screens.jeu.JeuListScreen
+import com.example.festivaljeumobile.ui.screens.reservation.ReservationFormScreen
+import com.example.festivaljeumobile.ui.screens.reservation.ReservationScreen
+import com.example.festivaljeumobile.ui.screens.user.UserFormScreen
+import com.example.festivaljeumobile.ui.screens.user.UserListScreen
 import com.example.festivaljeumobile.viewModel.auth.AuthEvent
 import com.example.festivaljeumobile.viewModel.auth.AuthViewModel
+import com.example.festivaljeumobile.viewModel.jeu.JeuFormViewModel
+import com.example.festivaljeumobile.viewModel.jeu.JeuListViewModel
+import com.example.festivaljeumobile.viewModel.user.UserFormViewModel
+import com.example.festivaljeumobile.viewModel.user.UserListViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -50,12 +63,19 @@ import com.example.festivaljeumobile.ui.screens.jeu.JeuFormScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppNavHost(isAdmin: Boolean = false) {
+fun AppNavHost() {
     val context = LocalContext.current.applicationContext
+    val app = context as FestivalApp
+    val hasSessionCookie by produceState(initialValue = false, context) {
+        value = withContext(Dispatchers.IO) {
+            app.cookieDataStore.hasValidCookies()
+        }
+    }
+
     val startDestination by produceState<NavKey?>(initialValue = null, context) {
         value = withContext(Dispatchers.IO) {
-            val app = context as FestivalApp
             when {
+                hasSessionCookie -> Festivals
                 context.isOnline() -> Login
                 app.festivalDatabase.festivalDao().hasFestivals() -> Festivals
                 else -> Login
@@ -66,25 +86,60 @@ fun AppNavHost(isAdmin: Boolean = false) {
     if (startDestination == null) {
         Box(
             modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             CircularProgressIndicator()
         }
         return
     }
 
-    val backStack = rememberNavBackStack(startDestination!!);
+    val backStack = rememberNavBackStack(startDestination!!)
     val currentDestination = backStack.lastOrNull()
+    val currentUserRole by produceState<UserRole?>(initialValue = null, context, currentDestination, hasSessionCookie) {
+        value = withContext(Dispatchers.IO) {
+            if (!hasSessionCookie) {
+                null
+            } else {
+                val cachedRole = app.cookieDataStore.readUserRole()
+                if (!context.isOnline()) {
+                    cachedRole
+                } else {
+                    app.authRepository.whoAmI()
+                        .getOrNull()
+                        ?.role ?: cachedRole
+                }
+            }
+        }
+    }
     val showNavBar = currentDestination != null && currentDestination !is Login
-    val showDrawer = currentDestination != null &&
-        currentDestination !is Login &&
-        currentDestination !is FestivalForm &&
-        currentDestination !is FestivalDetails
+    val isDetailDestination = currentDestination is FestivalForm ||
+        currentDestination is FestivalDetails ||
+        currentDestination is ReservationForm ||
+        currentDestination is JeuForm ||
+        currentDestination is JeuEditForm ||
+        currentDestination is UserCreate ||
+        currentDestination is UserEdit
+    val showDrawer = showNavBar && !isDetailDestination
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val authViewModel: AuthViewModel = viewModel()
+    val authViewModel = remember { AuthViewModel(app.authRepository) }
+    val jeuListViewModel = remember { JeuListViewModel(app.jeuRepository) }
+    val userListViewModel = remember { UserListViewModel(app.userRepository) }
     val scope = rememberCoroutineScope()
     val isOffline = !context.isOnline()
+    val canManageGames = currentUserRole in setOf(
+        UserRole.Admin,
+        UserRole.SuperOrganisateur,
+        UserRole.Organisateur,
+    )
+    val canManageFestivals = currentUserRole in setOf(
+        UserRole.Admin,
+        UserRole.SuperOrganisateur,
+    )
+    val canManageReservations = currentUserRole in setOf(
+        UserRole.Admin,
+        UserRole.SuperOrganisateur,
+    )
 
     LaunchedEffect(Unit) {
         authViewModel.events.collect { event ->
@@ -93,12 +148,11 @@ fun AppNavHost(isAdmin: Boolean = false) {
                     backStack.clear()
                     backStack.add(Festivals)
                 }
-                // Manage the logout call
+
                 is AuthEvent.NavigateToLogin -> {
                     backStack.clear()
                     backStack.add(Login)
                 }
-                else -> {}
             }
         }
     }
@@ -110,12 +164,12 @@ fun AppNavHost(isAdmin: Boolean = false) {
             ModalDrawerSheet {
                 Text(
                     text = "Menu",
-                    style = androidx.compose.material3.MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
                 )
                 NavBarDestination.entries
                     .filter { destination ->
-                        (!destination.adminOnly || isAdmin) &&
+                        destination.isVisibleFor(currentUserRole) &&
                             (!isOffline || destination != NavBarDestination.LOGOUT)
                     }
                     .forEach { destination ->
@@ -126,15 +180,16 @@ fun AppNavHost(isAdmin: Boolean = false) {
                             onClick = {
                                 if (destination == NavBarDestination.LOGOUT) {
                                     authViewModel.logout()
+                                } else {
+                                    backStack.clear()
+                                    backStack.add(destination.route)
                                 }
-                                backStack.clear()
-                                backStack.add(destination.route)
                                 scope.launch { drawerState.close() }
-                            }
+                            },
                         )
                     }
             }
-        }
+        },
     ) {
         Scaffold(
             topBar = {
@@ -142,7 +197,7 @@ fun AppNavHost(isAdmin: Boolean = false) {
                     TopAppBar(
                         title = { Text("Festival Jeu Mobile") },
                         navigationIcon = {
-                            if (currentDestination is FestivalForm || currentDestination is FestivalDetails) {
+                            if (isDetailDestination) {
                                 IconButton(onClick = { backStack.removeLastOrNull() }) {
                                     Icon(Icons.Default.ArrowBack, contentDescription = "Retour")
                                 }
@@ -151,22 +206,23 @@ fun AppNavHost(isAdmin: Boolean = false) {
                                     Icon(Icons.Default.Menu, contentDescription = "Menu")
                                 }
                             }
-                        }
+                        },
                     )
                 }
-            }
+            },
         ) { innerPadding ->
             NavDisplay(
                 backStack = backStack,
                 modifier = Modifier.padding(innerPadding),
                 onBack = { backStack.removeLastOrNull() },
                 entryProvider = entryProvider {
-                    entry<Login> { AuthScreen(viewModel = authViewModel)}
+                    entry<Login> {
+                        AuthScreen(viewModel = authViewModel)
+                    }
+
                     entry<Festivals> {
                         FestivalScreen(
-                            onAddFestivalClick = {
-                                backStack.add(FestivalForm())
-                            },
+                            onAddFestivalClick = { backStack.add(FestivalForm()) },
                             onFestivalClick = { festival ->
                                 backStack.add(
                                     FestivalDetails(
@@ -175,7 +231,7 @@ fun AppNavHost(isAdmin: Boolean = false) {
                                         date_debut = festival.date_debut,
                                         date_fin = festival.date_fin,
                                         nbTables = festival.nbTables,
-                                        zoneTarifaires = festival.zoneTarifaires
+                                        zoneTarifaires = festival.zoneTarifaires,
                                     )
                                 )
                             },
@@ -187,62 +243,130 @@ fun AppNavHost(isAdmin: Boolean = false) {
                                         date_debut = festival.date_debut,
                                         date_fin = festival.date_fin,
                                         nbTables = festival.nbTables,
-                                        zoneTarifaires = festival.zoneTarifaires
+                                        zoneTarifaires = festival.zoneTarifaires,
                                     )
                                 )
-                            }
+                            },
+                            canManageFestivals = canManageFestivals,
                         )
                     }
+
                     entry<FestivalForm> { festivalForm ->
                         FestivalFormScreen(
                             initialFestival = festivalForm.toFestivalOrNull(),
-                            onBackClick = { backStack.removeLastOrNull() }
+                            onBackClick = { backStack.removeLastOrNull() },
                         )
                     }
+
                     entry<FestivalDetails> { festivalDetails ->
                         FestivalFormScreen(
                             initialFestival = festivalDetails.toFestivalOrNull(),
                             readOnly = true,
-                            onBackClick = { backStack.removeLastOrNull() }
+                            onBackClick = { backStack.removeLastOrNull() },
                         )
                     }
+                    entry<Reservations> {
+                        ReservationScreen(
+                            onAddReservationClick = {
+                                backStack.add(ReservationForm())
+                            },
+                            onEditReservationClick = { reservation ->
+                                backStack.add(ReservationForm(reservation = reservation))
+                            },
+                            canManageReservations = canManageReservations,
+                        )
+                    }
+
+                    entry<ReservationForm> { reservationForm ->
+                        ReservationFormScreen(
+                            initialReservation = reservationForm.reservation,
+                            onBackClick = { backStack.removeLastOrNull() },
+                        )
+                    }
+
                     entry<Jeux> {
                         JeuListScreen(
-                            onJeuClick = { jeuId ->
-                                // À implémenter si JeuDetailScreen existe
-                            },
-                            onAddJeuClick = {
-                                backStack.add(JeuForm)
-                            },
-                            onEditJeuClick = { jeuId ->
-                                backStack.add(JeuEditForm(jeuId))
-                            }
+                            viewModel = jeuListViewModel,
+                            onJeuClick = {},
+                            onAddJeuClick = { backStack.add(JeuForm) },
+                            onEditJeuClick = { jeuId -> backStack.add(JeuEditForm(jeuId)) },
+                            canManageGames = canManageGames,
                         )
                     }
+
                     entry<JeuForm> {
                         JeuFormScreen(
                             onNavigateBack = { backStack.removeLastOrNull() },
                             onSuccessNavigateBack = {
+                                jeuListViewModel.refresh()
                                 backStack.removeLastOrNull()
-                            }
+                            },
                         )
                     }
+
                     entry<JeuEditForm> { jeuEditForm ->
                         JeuFormScreen(
                             jeuId = jeuEditForm.jeuId,
                             onNavigateBack = { backStack.removeLastOrNull() },
                             onSuccessNavigateBack = {
+                                jeuListViewModel.refresh()
                                 backStack.removeLastOrNull()
-                            }
+                            },
                         )
                     }
-                    entry<Reservations> { Text("Réservations") }
-                    entry<Benevoles> { Text("Bénévoles") }
-                    entry<Editeurs> { Text("Éditeurs") }
-                    entry<Reservants> { Text("Réservants") }
-                    entry<Admin> { Text("Admin") }
-                    entry <Logout> { Text("Logout") }
-                }
+
+                    entry<UserList> {
+                        UserListScreen(
+                            viewModel = userListViewModel,
+                            onAddUserClick = { backStack.add(UserCreate) },
+                            onEditUserClick = { user ->
+                                backStack.add(
+                                    UserEdit(
+                                        id = user.id ?: return@UserListScreen,
+                                        login = user.login,
+                                        prenom = user.prenom ?: "",
+                                        nom = user.nom ?: "",
+                                        role = user.role,
+                                    )
+                                )
+                            },
+                        )
+                    }
+
+                    entry<UserCreate> {
+                        val userFormViewModel = remember { UserFormViewModel(app.userRepository) }
+                        UserFormScreen(
+                            initialUser = null,
+                            onBackClick = {
+                                userListViewModel.loadUsers()
+                                backStack.removeLastOrNull()
+                            },
+                            viewModel = userFormViewModel,
+                        )
+                    }
+
+                    entry<UserEdit> { userEdit ->
+                        val userFormViewModel = remember { UserFormViewModel(app.userRepository) }
+                        UserFormScreen(
+                            initialUser = userEdit.toUser(),
+                            onBackClick = {
+                                userListViewModel.loadUsers()
+                                backStack.removeLastOrNull()
+                            },
+                            viewModel = userFormViewModel,
+                        )
+                    }
+
+                    entry<Benevoles> { Text("Benevoles") }
+                    entry<Editeurs> { Text("Editeurs") }
+                    entry<Reservants> { Text("Reservants") }
+                    entry<Admin> {
+                        AdminScreen(
+                            onUsersClick = { backStack.add(UserList) },
+                        )
+                    }
+                    entry<Logout> { Text("Logout") }
+                },
             )
         }
     }
@@ -253,7 +377,6 @@ private fun Context.isOnline(): Boolean {
         getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     val network = connectivityManager.activeNetwork ?: return false
     val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-
     return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
         capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
 }
@@ -266,7 +389,7 @@ private fun FestivalForm.toFestivalOrNull() =
             date_debut = date_debut,
             date_fin = date_fin,
             nbTables = nbTables,
-            zoneTarifaires = zoneTarifaires
+            zoneTarifaires = zoneTarifaires,
         )
     }
 
@@ -278,6 +401,32 @@ private fun FestivalDetails.toFestivalOrNull() =
             date_debut = date_debut,
             date_fin = date_fin,
             nbTables = nbTables,
-            zoneTarifaires = zoneTarifaires
+            zoneTarifaires = zoneTarifaires,
+        )
+    }
+
+private fun UserEdit.toUser() = User(
+    id = id,
+    login = login,
+    prenom = prenom.ifBlank { null },
+    nom = nom.ifBlank { null },
+    role = role,
+)
+
+private fun NavBarDestination.isVisibleFor(role: UserRole?): Boolean =
+    when (role) {
+        UserRole.Admin -> true
+        UserRole.SuperOrganisateur -> this != NavBarDestination.ADMIN
+        UserRole.Organisateur -> this in setOf(
+            NavBarDestination.FESTIVALS,
+            NavBarDestination.JEUX,
+            NavBarDestination.RESERVATIONS,
+            NavBarDestination.LOGOUT,
+        )
+        else -> this in setOf(
+            NavBarDestination.FESTIVALS,
+            NavBarDestination.JEUX,
+            NavBarDestination.RESERVATIONS,
+            NavBarDestination.LOGOUT,
         )
     }

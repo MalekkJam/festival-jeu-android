@@ -38,25 +38,6 @@ data class JeuEntity(
             theme = theme,
             description = description,
             imageJeu = imageJeu,
-            videoRegle = videoRegle
+            videoRegle = videoRegle,
         )
 }
-
-fun Jeu.toEntity(): JeuEntity =
-    JeuEntity(
-        idJeu = idJeu,
-        libelleJeu = libelleJeu,
-        auteurJeu = auteurJeu,
-        nbMinJoueurJeu = nbMinJoueurJeu,
-        nbMaxJoueurJeu = nbMaxJoueurJeu,
-        noticeJeu = noticeJeu,
-        idEditeur = idEditeur,
-        idTypeJeu = idTypeJeu,
-        agemini = agemini,
-        prototype = prototype,
-        duree = duree,
-        theme = theme,
-        description = description,
-        imageJeu = imageJeu,
-        videoRegle = videoRegle
-    )

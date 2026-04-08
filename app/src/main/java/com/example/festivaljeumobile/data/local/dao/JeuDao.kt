@@ -2,6 +2,7 @@ package com.example.festivaljeumobile.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Upsert
 import com.example.festivaljeumobile.data.local.entity.JeuEntity
 import kotlinx.coroutines.flow.Flow

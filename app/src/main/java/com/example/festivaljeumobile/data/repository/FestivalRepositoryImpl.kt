@@ -6,7 +6,7 @@ import com.example.festivaljeumobile.data.local.entity.ZoneTarifaireEntity
 import com.example.festivaljeumobile.data.remote.api.FestivalApi
 import com.example.festivaljeumobile.data.remote.dto.FestivalDto
 import com.example.festivaljeumobile.data.remote.dto.ZoneTarifaireDto
-import com.example.festivaljeumobile.data.remote.dto.toDomain
+import com.example.festivaljeumobile.data.remote.dto.toZoneTarifaire
 import com.example.festivaljeumobile.data.remote.dto.toDeleteRequestDto
 import com.example.festivaljeumobile.data.remote.dto.toDto
 import com.example.festivaljeumobile.data.remote.dto.toEntity
@@ -42,7 +42,7 @@ class FestivalRepositoryImpl(
                     festivalId = festivalId,
                     zones = remoteZones
                 )
-                Result.success(remoteZones.map { it.toDomain() })
+                Result.success(remoteZones.map { it.toZoneTarifaire() })
             } catch (throwable: Throwable) {
                 val localZones = zoneTarifaireDao.getByFestivalId(festivalId).map { it.toDomain() }
                 if (localZones.isNotEmpty()) {
@@ -145,12 +145,21 @@ class FestivalRepositoryImpl(
         withContext(Dispatchers.IO) {
             try {
                 festival.zoneTarifaires.forEach { zone ->
-                    zone.id?.let { zoneId ->
-                        festivalApi.updateZone(zoneId, zone.toDto())
+                    if (zone.id != null) {
+                        festivalApi.updateZone(zone.id, zone.toDto())
+                    } else {
+                        festivalApi.addZone(festival.id, zone.toDto())
                     }
                 }
                 val updatedFestival = festivalApi.updateFestival(festival.toDto())
-                val syncedFestival = updatedFestival.withFallbackFrom(festival).withComputedTables()
+                val remoteZones = runCatching { festivalApi.getAllZones(festival.id) }
+                    .getOrElse { festival.zoneTarifaires.map { it.toDto() } }
+                val syncedFestival = updatedFestival
+                    .withFallbackFrom(festival)
+                    .copy(
+                        zones = remoteZones,
+                        nbTables = remoteZones.sumOf { it.nbTables }
+                    )
                 festivalDao.upsertAll(listOf(syncedFestival.toEntity()))
                 syncZonesForFestival(
                     zoneTarifaireDao = zoneTarifaireDao,

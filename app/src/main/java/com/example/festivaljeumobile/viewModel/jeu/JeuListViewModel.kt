@@ -31,6 +31,7 @@ class JeuListViewModel(
 
     private val _uiState = MutableStateFlow(JeuListUiState())
     val uiState: StateFlow<JeuListUiState> = _uiState.asStateFlow()
+    private var loadJeuxJob: Job? = null
 
     private var observejeuxJob: Job? = null
 
@@ -155,16 +156,10 @@ class JeuListViewModel(
         _uiState.update { it.copy(searchQuery = query) }
     }
 
-    /**
-     * Change le champ de tri
-     */
     fun setSortField(field: JeuSortField) {
         _uiState.update { it.copy(sortField = field) }
     }
 
-    /**
-     * Change la direction de tri
-     */
     fun toggleSortDirection() {
         _uiState.update {
             it.copy(
@@ -174,38 +169,31 @@ class JeuListViewModel(
     }
 }
 
-/**
- * État UI pour la liste des jeux
- */
 data class JeuListUiState(
     val jeux: List<Jeu> = emptyList(),
     val searchQuery: String = "",
     val isLoading: Boolean = false,
+    val isOffline: Boolean = false,
     val error: String? = null,
     val isOffline: Boolean = false,
     val deletingJeuId: Int? = null,
     val sortField: JeuSortField = JeuSortField.NAME,
     val sortDirection: SortDirection = SortDirection.ASC
 ) {
-    /**
-     * Retourne les jeux filtrés et triés
-     */
     val filteredJeux: List<Jeu>
         get() {
             var filtered = jeux
-            
-            // Filtre par recherche
+
             if (searchQuery.isNotEmpty()) {
                 val query = searchQuery.lowercase()
                 filtered = filtered.filter { jeu ->
                     jeu.libelleJeu.lowercase().contains(query) ||
-                            (jeu.auteurJeu?.lowercase()?.contains(query) ?: false) ||
-                            (jeu.theme?.lowercase()?.contains(query) ?: false) ||
-                            (jeu.description?.lowercase()?.contains(query) ?: false)
+                        (jeu.auteurJeu?.lowercase()?.contains(query) ?: false) ||
+                        (jeu.theme?.lowercase()?.contains(query) ?: false) ||
+                        (jeu.description?.lowercase()?.contains(query) ?: false)
                 }
             }
 
-            // Tri
             filtered = when (sortField) {
                 JeuSortField.NAME -> filtered.sortedBy { it.libelleJeu }
                 JeuSortField.AUTHOR -> filtered.sortedBy { it.auteurJeu }
