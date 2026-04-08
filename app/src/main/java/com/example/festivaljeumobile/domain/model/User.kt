@@ -8,10 +8,3 @@ data class User(
     val prenom: String? = null,
     val nom: String? = null
 )
-
-enum class UserRole {
-    Benevole,
-    Organisateur,
-    SuperOrganisateur,
-    Admin
-}

@@ -4,11 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import com.example.festivaljeumobile.data.remote.RetrofitInstance
 import com.example.festivaljeumobile.ui.navigation.AppNavHost
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.festivaljeumobile.ui.screens.auth.AuthScreen
 import com.example.festivaljeumobile.ui.theme.FestivalJeuMobileTheme
-import com.example.festivaljeumobile.viewModel.auth.AuthViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,7 +17,16 @@ class MainActivity : ComponentActivity() {
         setContent {
             FestivalJeuMobileTheme {
                 AppNavHost()
-         }
-     }
- }
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        if (isFinishing && !isChangingConfigurations) {
+            runBlocking(Dispatchers.IO) {
+                RetrofitInstance.clearCookies()
+            }
+        }
+        super.onDestroy()
+    }
 }

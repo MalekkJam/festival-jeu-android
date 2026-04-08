@@ -1,6 +1,7 @@
 package com.example.festivaljeumobile.ui.navigation
 
 import androidx.navigation3.runtime.NavKey
+import com.example.festivaljeumobile.domain.model.Reservation
 import com.example.festivaljeumobile.domain.model.ZoneTarifaire
 import kotlinx.serialization.Serializable
 
@@ -26,6 +27,9 @@ data class FestivalDetails(
 ) : NavKey
 @Serializable object Jeux : NavKey
 @Serializable object Reservations : NavKey
+@Serializable data class ReservationForm(
+    val reservation: Reservation? = null,
+) : NavKey
 @Serializable object Benevoles : NavKey
 @Serializable object Editeurs : NavKey
 @Serializable object Reservants : NavKey
