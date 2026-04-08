@@ -14,6 +14,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        
+        val authService = AuthService.getInstance()
+        
+        // Verify session at app startup
+        lifecycleScope.launch {
+            authService.verifySession()
+        }
+        
         setContent {
             FestivalJeuMobileTheme {
                 AppNavHost()
@@ -28,5 +36,26 @@ class MainActivity : ComponentActivity() {
             }
         }
         super.onDestroy()
+    }
+}
+
+@Composable
+fun AppContent(authService: AuthService) {
+    val isLoggedIn by authService.isLoggedIn.collectAsState(initial = false)
+    
+    when (isLoggedIn) {
+        true -> {
+            // User is logged in
+            AppNavHost()
+        }
+        false -> {
+            // User is not logged in
+            AuthScreen(
+                onLoginSuccess = { 
+                    // After login, AuthService state is updated automatically
+                    // The UI will recompose and show AppNavHost
+                }
+            )
+        }
     }
 }
