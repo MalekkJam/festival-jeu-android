@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.festivaljeumobile.domain.model.Jeu
 import com.example.festivaljeumobile.viewModel.jeu.JeuFormViewModel
 import com.example.festivaljeumobile.viewModel.jeu.JeuDetailUiState
@@ -35,16 +36,16 @@ import com.example.festivaljeumobile.viewModel.jeu.JeuActionUiState
 
 /**
  * Écran formulaire pour créer/éditer un jeu
- * Composable pur, injection manuelle du viewModel
+ * Crée son propre ViewModel
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JeuFormScreen(
     jeuId: Int? = null,
-    viewModel: JeuFormViewModel,
     onNavigateBack: () -> Unit = {},
     onSuccessNavigateBack: () -> Unit = {}
 ) {
+    val viewModel: JeuFormViewModel = viewModel()
     val detailState = viewModel.detailUiState.collectAsState()
     val actionState = viewModel.actionUiState.collectAsState()
 

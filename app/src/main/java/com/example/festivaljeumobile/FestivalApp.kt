@@ -5,7 +5,9 @@ import androidx.room.Room
 import com.example.festivaljeumobile.data.local.db.FestivalDatabase
 import com.example.festivaljeumobile.data.remote.RetrofitInstance
 import com.example.festivaljeumobile.data.remote.api.FestivalApi
+import com.example.festivaljeumobile.data.remote.api.JeuApi
 import com.example.festivaljeumobile.data.repository.FestivalRepositoryImpl
+import com.example.festivaljeumobile.data.repository.JeuRepositoryImpl
 
 class FestivalApp : Application() {
 
@@ -32,6 +34,17 @@ class FestivalApp : Application() {
             festivalDao = festivalDatabase.festivalDao(),
             zoneTarifaireDao = festivalDatabase.zoneTarifaireDao(),
             festivalApi = festivalApi
+        )
+    }
+
+    val jeuApi: JeuApi by lazy {
+        RetrofitInstance.retrofit.create(JeuApi::class.java)
+    }
+
+    val jeuRepository by lazy {
+        JeuRepositoryImpl(
+            jeuDao = festivalDatabase.jeuDao(),
+            jeuApi = jeuApi
         )
     }
 }

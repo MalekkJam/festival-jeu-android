@@ -45,7 +45,6 @@ import com.example.festivaljeumobile.viewModel.auth.AuthViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.example.festivaljeumobile.di.ServiceLocator
 import com.example.festivaljeumobile.ui.screens.jeu.JeuListScreen
 import com.example.festivaljeumobile.ui.screens.jeu.JeuFormScreen
 
@@ -208,9 +207,7 @@ fun AppNavHost(isAdmin: Boolean = false) {
                         )
                     }
                     entry<Jeux> {
-                        val viewModel = remember { ServiceLocator.createJeuListViewModel() }
                         JeuListScreen(
-                            viewModel = viewModel,
                             onJeuClick = { jeuId ->
                                 // À implémenter si JeuDetailScreen existe
                             },
@@ -223,9 +220,7 @@ fun AppNavHost(isAdmin: Boolean = false) {
                         )
                     }
                     entry<JeuForm> {
-                        val viewModel = remember { ServiceLocator.createJeuFormViewModel() }
                         JeuFormScreen(
-                            viewModel = viewModel,
                             onNavigateBack = { backStack.removeLastOrNull() },
                             onSuccessNavigateBack = {
                                 backStack.removeLastOrNull()
@@ -233,10 +228,8 @@ fun AppNavHost(isAdmin: Boolean = false) {
                         )
                     }
                     entry<JeuEditForm> { jeuEditForm ->
-                        val viewModel = remember { ServiceLocator.createJeuFormViewModel() }
                         JeuFormScreen(
                             jeuId = jeuEditForm.jeuId,
-                            viewModel = viewModel,
                             onNavigateBack = { backStack.removeLastOrNull() },
                             onSuccessNavigateBack = {
                                 backStack.removeLastOrNull()

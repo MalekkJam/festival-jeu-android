@@ -1,9 +1,12 @@
 package com.example.festivaljeumobile.viewModel.jeu
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.festivaljeumobile.FestivalApp
 import com.example.festivaljeumobile.domain.model.Jeu
 import com.example.festivaljeumobile.domain.repository.JeuRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,10 +15,14 @@ import kotlinx.coroutines.launch
 
 /**
  * ViewModel pour le détail d'un jeu et la gestion des actions (add/update)
+ * Accède au repository via FestivalApp comme JeuListViewModel
  */
 class JeuFormViewModel(
+    application: Application
+) : AndroidViewModel(application) {
+
     private val jeuRepository: JeuRepository
-) : ViewModel() {
+        get() = (getApplication<Application>() as FestivalApp).jeuRepository
 
     private val _detailUiState = MutableStateFlow<JeuDetailUiState>(JeuDetailUiState.Loading)
     val detailUiState: StateFlow<JeuDetailUiState> = _detailUiState.asStateFlow()
@@ -27,18 +34,18 @@ class JeuFormViewModel(
      * Charge un jeu par ID
      */
     fun loadJeu(idJeu: Int) {
-        viewModelScope.launch {
-            _detailUiState.value = JeuDetailUiState.Loading
+        viewModelScope.launch(Dispatchers.IO) {
+            _detailUiState.update { JeuDetailUiState.Loading }
             jeuRepository.getJeuById(idJeu)
                 .onSuccess { jeu ->
                     if (jeu != null) {
-                        _detailUiState.value = JeuDetailUiState.Success(jeu)
+                        _detailUiState.update { JeuDetailUiState.Success(jeu) }
                     } else {
-                        _detailUiState.value = JeuDetailUiState.NotFound
+                        _detailUiState.update { JeuDetailUiState.NotFound }
                     }
                 }
                 .onFailure { e ->
-                    _detailUiState.value = JeuDetailUiState.Error(e.message ?: "Erreur inconnue")
+                    _detailUiState.update { JeuDetailUiState.Error(e.message ?: "Erreur inconnue") }
                 }
         }
     }
@@ -47,14 +54,14 @@ class JeuFormViewModel(
      * Crée un nouveau jeu
      */
     fun addJeu(jeu: Jeu) {
-        viewModelScope.launch {
-            _actionUiState.value = JeuActionUiState.Loading
+        viewModelScope.launch(Dispatchers.IO) {
+            _actionUiState.update { JeuActionUiState.Loading }
             jeuRepository.addJeu(jeu)
                 .onSuccess {
-                    _actionUiState.value = JeuActionUiState.Success("Jeu créé avec succès")
+                    _actionUiState.update { JeuActionUiState.Success("Jeu créé avec succès") }
                 }
                 .onFailure { e ->
-                    _actionUiState.value = JeuActionUiState.Error(e.message ?: "Erreur lors de la création")
+                    _actionUiState.update { JeuActionUiState.Error(e.message ?: "Erreur lors de la création") }
                 }
         }
     }
@@ -63,14 +70,14 @@ class JeuFormViewModel(
      * Met à jour un jeu existant
      */
     fun updateJeu(jeu: Jeu) {
-        viewModelScope.launch {
-            _actionUiState.value = JeuActionUiState.Loading
+        viewModelScope.launch(Dispatchers.IO) {
+            _actionUiState.update { JeuActionUiState.Loading }
             jeuRepository.updateJeu(jeu)
                 .onSuccess {
-                    _actionUiState.value = JeuActionUiState.Success("Jeu mis à jour avec succès")
+                    _actionUiState.update { JeuActionUiState.Success("Jeu mis à jour avec succès") }
                 }
                 .onFailure { e ->
-                    _actionUiState.value = JeuActionUiState.Error(e.message ?: "Erreur lors de la mise à jour")
+                    _actionUiState.update { JeuActionUiState.Error(e.message ?: "Erreur lors de la mise à jour") }
                 }
         }
     }
@@ -79,14 +86,14 @@ class JeuFormViewModel(
      * Supprime un jeu
      */
     fun deleteJeu(idJeu: Int, libelleJeu: String) {
-        viewModelScope.launch {
-            _actionUiState.value = JeuActionUiState.Loading
+        viewModelScope.launch(Dispatchers.IO) {
+            _actionUiState.update { JeuActionUiState.Loading }
             jeuRepository.deleteJeu(idJeu, libelleJeu)
                 .onSuccess {
-                    _actionUiState.value = JeuActionUiState.Success("Jeu supprimé avec succès")
+                    _actionUiState.update { JeuActionUiState.Success("Jeu supprimé avec succès") }
                 }
                 .onFailure { e ->
-                    _actionUiState.value = JeuActionUiState.Error(e.message ?: "Erreur lors de la suppression")
+                    _actionUiState.update { JeuActionUiState.Error(e.message ?: "Erreur lors de la suppression") }
                 }
         }
     }
@@ -95,7 +102,7 @@ class JeuFormViewModel(
      * Réinitialise l'état des actions
      */
     fun resetActionState() {
-        _actionUiState.value = JeuActionUiState.Idle
+        _actionUiState.update { JeuActionUiState.Idle }
     }
 }
 

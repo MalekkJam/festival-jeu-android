@@ -28,21 +28,22 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.festivaljeumobile.ui.screens.jeu.components.JeuCard
 import com.example.festivaljeumobile.viewModel.jeu.JeuListViewModel
 
 /**
  * Écran liste des jeux
- * Composable pur, injection manuelle du viewModel
+ * Crée son propre ViewModel
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JeuListScreen(
-    viewModel: JeuListViewModel,
     onJeuClick: (Int) -> Unit = {},
     onAddJeuClick: () -> Unit = {},
     onEditJeuClick: (Int) -> Unit = {}
 ) {
+    val viewModel: JeuListViewModel = viewModel()
     val uiState = viewModel.uiState.collectAsState()
     val state = uiState.value
 
@@ -51,7 +52,7 @@ fun JeuListScreen(
             TopAppBar(
                 title = { Text("Jeux") },
                 actions = {
-                    IconButton(onClick = { viewModel.refresh() }) {
+                    IconButton(onClick = { viewModel.refreshJeux() }) {
                         Icon(Icons.Filled.Refresh, contentDescription = "Rafraîchir")
                     }
                     IconButton(onClick = { viewModel.toggleSortDirection() }) {
