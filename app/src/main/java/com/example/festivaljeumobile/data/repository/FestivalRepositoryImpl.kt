@@ -90,7 +90,7 @@ class FestivalRepositoryImpl(
             } catch (throwable: Throwable) {
                 Result.failure(
                     when (throwable) {
-                        is IOException -> OfflineException()
+                        is IOException -> OfflineException("Mode hors ligne : affichage des festivals en cache.")
                         is HttpException -> Exception("Erreur serveur (${throwable.code()}).")
                         else -> Exception("Impossible de recuperer les festivals.")
                     }
@@ -179,8 +179,6 @@ class FestivalRepositoryImpl(
         }
 
 }
-
-class OfflineException : IOException("Mode hors ligne : affichage des festivals en cache.")
 
 private fun Festival.toDtoForCreate(): FestivalDto =
     toDto().copy(id = null)

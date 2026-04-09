@@ -25,9 +25,11 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -47,6 +49,8 @@ import com.example.festivaljeumobile.ui.screens.jeu.JeuFormScreen
 import com.example.festivaljeumobile.ui.screens.jeu.JeuListScreen
 import com.example.festivaljeumobile.ui.screens.reservation.ReservationFormScreen
 import com.example.festivaljeumobile.ui.screens.reservation.ReservationScreen
+import com.example.festivaljeumobile.ui.screens.reservant.ReservantFormScreen
+import com.example.festivaljeumobile.ui.screens.reservant.ReservantScreen
 import com.example.festivaljeumobile.ui.screens.user.UserFormScreen
 import com.example.festivaljeumobile.ui.screens.user.UserListScreen
 import com.example.festivaljeumobile.viewModel.auth.AuthEvent
@@ -64,14 +68,11 @@ import kotlinx.coroutines.withContext
 fun AppNavHost() {
     val context = LocalContext.current.applicationContext
     val app = context as FestivalApp
-    val hasSessionCookie by produceState(initialValue = false, context) {
-        value = withContext(Dispatchers.IO) {
-            app.cookieDataStore.hasValidCookies()
-        }
-    }
+    var sessionRefreshTick by remember { mutableIntStateOf(0) }
 
     val startDestination by produceState<NavKey?>(initialValue = null, context) {
         value = withContext(Dispatchers.IO) {
+            val hasSessionCookie = app.cookieDataStore.hasValidCookies()
             when {
                 hasSessionCookie -> Festivals
                 context.isOnline() -> Login
@@ -93,26 +94,21 @@ fun AppNavHost() {
 
     val backStack = rememberNavBackStack(startDestination!!)
     val currentDestination = backStack.lastOrNull()
-    val currentUserRole by produceState<UserRole?>(initialValue = null, context, currentDestination, hasSessionCookie) {
+    val currentUserRole by produceState<UserRole?>(
+        initialValue = null,
+        context,
+        sessionRefreshTick,
+    ) {
         value = withContext(Dispatchers.IO) {
-            if (!hasSessionCookie) {
-                null
-            } else {
-                val cachedRole = app.cookieDataStore.readUserRole()
-                if (!context.isOnline()) {
-                    cachedRole
-                } else {
-                    app.authRepository.whoAmI()
-                        .getOrNull()
-                        ?.role ?: cachedRole
-                }
-            }
+            app.cookieDataStore.readUserRole()
         }
     }
+
     val showNavBar = currentDestination != null && currentDestination !is Login
     val isDetailDestination = currentDestination is FestivalForm ||
         currentDestination is FestivalDetails ||
         currentDestination is ReservationForm ||
+        currentDestination is ReservantForm ||
         currentDestination is JeuForm ||
         currentDestination is JeuEditForm ||
         currentDestination is UserCreate ||
@@ -122,9 +118,9 @@ fun AppNavHost() {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val authViewModel = remember { AuthViewModel(app.authRepository) }
     val jeuListViewModel = remember { JeuListViewModel(app.jeuRepository) }
-    val userListViewModel = remember { UserListViewModel(app.userRepository) }
     val scope = rememberCoroutineScope()
     val isOffline = !context.isOnline()
+
     val canManageGames = currentUserRole in setOf(
         UserRole.Admin,
         UserRole.SuperOrganisateur,
@@ -138,16 +134,22 @@ fun AppNavHost() {
         UserRole.Admin,
         UserRole.SuperOrganisateur,
     )
+    val canManageReservants = currentUserRole in setOf(
+        UserRole.Admin,
+        UserRole.SuperOrganisateur,
+    )
 
     LaunchedEffect(Unit) {
         authViewModel.events.collect { event ->
             when (event) {
                 is AuthEvent.NavigateToHome -> {
+                    sessionRefreshTick++
                     backStack.clear()
                     backStack.add(Festivals)
                 }
 
                 is AuthEvent.NavigateToLogin -> {
+                    sessionRefreshTick++
                     backStack.clear()
                     backStack.add(Login)
                 }
@@ -283,6 +285,43 @@ fun AppNavHost() {
                         )
                     }
 
+                    entry<Reservants> {
+                        ReservantScreen(
+                            onAddReservantClick = {
+                                backStack.add(ReservantForm())
+                            },
+                            onReservantClick = { reservant ->
+                                backStack.add(
+                                    ReservantForm(
+                                        id = reservant.id,
+                                        nom = reservant.nom,
+                                        type = reservant.type.name,
+                                    )
+                                )
+                            },
+                            onEditReservantClick = { reservant ->
+                                backStack.add(
+                                    ReservantForm(
+                                        id = reservant.id,
+                                        nom = reservant.nom,
+                                        type = reservant.type.name,
+                                    )
+                                )
+                            },
+                            canManageReservants = canManageReservants,
+                        )
+                    }
+
+                    entry<ReservantForm> { reservantForm ->
+                        ReservantFormScreen(
+                            initialReservant = reservantForm.toReservantOrNull(),
+                            onBackClick = { backStack.removeLastOrNull() },
+                        )
+                    }
+
+                    entry<Benevoles> { Text("Benevoles") }
+                    entry<Editeurs> { Text("Editeurs") }
+
                     entry<Jeux> {
                         JeuListScreen(
                             viewModel = jeuListViewModel,
@@ -319,6 +358,7 @@ fun AppNavHost() {
                     }
 
                     entry<UserList> {
+                        val userListViewModel = remember { UserListViewModel(app.userRepository) }
                         UserListScreen(
                             viewModel = userListViewModel,
                             onAddUserClick = { backStack.add(UserCreate) },
@@ -340,10 +380,7 @@ fun AppNavHost() {
                         val userFormViewModel = remember { UserFormViewModel(app.userRepository) }
                         UserFormScreen(
                             initialUser = null,
-                            onBackClick = {
-                                userListViewModel.loadUsers()
-                                backStack.removeLastOrNull()
-                            },
+                            onBackClick = { backStack.removeLastOrNull() },
                             viewModel = userFormViewModel,
                         )
                     }
@@ -352,17 +389,11 @@ fun AppNavHost() {
                         val userFormViewModel = remember { UserFormViewModel(app.userRepository) }
                         UserFormScreen(
                             initialUser = userEdit.toUser(),
-                            onBackClick = {
-                                userListViewModel.loadUsers()
-                                backStack.removeLastOrNull()
-                            },
+                            onBackClick = { backStack.removeLastOrNull() },
                             viewModel = userFormViewModel,
                         )
                     }
 
-                    entry<Benevoles> { Text("Benevoles") }
-                    entry<Editeurs> { Text("Editeurs") }
-                    entry<Reservants> { Text("Reservants") }
                     entry<Admin> {
                         AdminScreen(
                             onUsersClick = { backStack.add(UserList) },
@@ -416,6 +447,15 @@ private fun UserEdit.toUser() = User(
     role = role,
 )
 
+private fun ReservantForm.toReservantOrNull() =
+    id?.let {
+        com.example.festivaljeumobile.domain.model.Reservant(
+            id = it,
+            nom = nom,
+            type = com.example.festivaljeumobile.domain.model.ReservantType.valueOf(type),
+        )
+    }
+
 private fun NavBarDestination.isVisibleFor(role: UserRole?): Boolean =
     when (role) {
         UserRole.Admin -> true
@@ -424,12 +464,14 @@ private fun NavBarDestination.isVisibleFor(role: UserRole?): Boolean =
             NavBarDestination.FESTIVALS,
             NavBarDestination.JEUX,
             NavBarDestination.RESERVATIONS,
+            NavBarDestination.RESERVANTS,
             NavBarDestination.LOGOUT,
         )
         else -> this in setOf(
             NavBarDestination.FESTIVALS,
             NavBarDestination.JEUX,
             NavBarDestination.RESERVATIONS,
+            NavBarDestination.RESERVANTS,
             NavBarDestination.LOGOUT,
         )
     }

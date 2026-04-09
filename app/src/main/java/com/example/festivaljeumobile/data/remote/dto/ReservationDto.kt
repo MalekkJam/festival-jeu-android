@@ -112,7 +112,7 @@ fun Reservation.toSaveRequestDto(): CreateReservationRequestDto =
         id = id,
         festivalId = festivalId,
         reservantId = reservantId,
-        etatDeSuivi = etatDeSuivi.ifBlank { null },
+        etatDeSuivi = etatDeSuivi.toApiEtatDeSuivi(),
         dateDeContact = dateDeContact,
         remise = remise?.ifBlank { null },
         montantRemise = montantRemise,
@@ -129,3 +129,22 @@ fun Reservation.toSaveRequestDto(): CreateReservationRequestDto =
             )
         }
     )
+
+private fun String?.toApiEtatDeSuivi(): String? {
+    val value = this?.trim().orEmpty()
+    if (value.isBlank()) {
+        return null
+    }
+
+    return when (value) {
+        "Pas_encore_de_contact" -> "pas encore de contact"
+        "Contact_pris" -> "contact pris"
+        "Discussion_en_cours" -> "discussion en cours"
+        "Refuse" -> "refuse"
+        "Pas_de_reponse" -> "pas de reponse"
+        "Present" -> "present"
+        "Facture" -> "facture"
+        "Facture_payee" -> "facture payee"
+        else -> value
+    }
+}

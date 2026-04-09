@@ -90,7 +90,7 @@ class JeuRepositoryImpl(
                 Log.e("JeuRepository", "Error refreshing jeux: ${throwable.message}", throwable)
                 Result.failure(
                     when (throwable) {
-                        is IOException -> OfflineException()
+                        is IOException -> OfflineException("Mode hors ligne : affichage des festivals en cache.")
                         is HttpException -> Exception("Erreur serveur (${throwable.code()}).")
                         else -> Exception("Impossible de recuperer les jeux.")
                     }

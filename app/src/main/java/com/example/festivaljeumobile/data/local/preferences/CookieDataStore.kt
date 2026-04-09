@@ -16,7 +16,6 @@ private val Context.cookieDataStore by preferencesDataStore(name = "cookies")
 class CookieDataStore(
     private val context: Context,
 ) {
-
     private val json = Json {
         ignoreUnknownKeys = true
     }

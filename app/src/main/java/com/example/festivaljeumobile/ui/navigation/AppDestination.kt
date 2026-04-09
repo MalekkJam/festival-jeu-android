@@ -35,9 +35,12 @@ data class FestivalDetails(
 @Serializable data class ReservationForm(
     val reservation: Reservation? = null,
 ) : NavKey
-@Serializable object Benevoles : NavKey
-@Serializable object Editeurs : NavKey
 @Serializable object Reservants : NavKey
+@Serializable data class ReservantForm(
+    val id: Int? = null,
+    val nom: String = "",
+    val type: String = "Association", // Default type, serialized as String for navigation
+) : NavKey
 @Serializable object Admin : NavKey
 @Serializable object UserList : NavKey
 @Serializable object UserCreate : NavKey
@@ -49,3 +52,5 @@ data class FestivalDetails(
     val role: UserRole = UserRole.Benevole,
 ) : NavKey
 @Serializable object Logout : NavKey
+@Serializable object Benevoles : NavKey
+@Serializable object Editeurs : NavKey
