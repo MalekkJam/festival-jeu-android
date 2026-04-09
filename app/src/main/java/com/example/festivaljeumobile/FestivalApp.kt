@@ -14,6 +14,7 @@ import com.example.festivaljeumobile.data.remote.api.UserApi
 import com.example.festivaljeumobile.data.repository.AuthRepositoryImpl
 import com.example.festivaljeumobile.data.repository.FestivalRepositoryImpl
 import com.example.festivaljeumobile.data.repository.JeuRepositoryImpl
+import com.example.festivaljeumobile.data.repository.ReservantRepositoryImpl
 import com.example.festivaljeumobile.data.repository.ReservationRepositoryImpl
 import com.example.festivaljeumobile.data.repository.UserRepositoryImpl
 
@@ -96,6 +97,13 @@ class FestivalApp : Application() {
             reservantApi = reservantApi,
             festivalApi = festivalApi,
             jeuApi = jeuApi
+        )
+    }
+
+    val reservantRepository by lazy {
+        ReservantRepositoryImpl(
+            reservantDao = festivalDatabase.reservantDao(),
+            reservantApi = reservantApi
         )
     }
 }
