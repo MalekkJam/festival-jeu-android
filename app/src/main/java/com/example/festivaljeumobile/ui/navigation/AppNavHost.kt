@@ -47,6 +47,8 @@ import com.example.festivaljeumobile.ui.screens.jeu.JeuFormScreen
 import com.example.festivaljeumobile.ui.screens.jeu.JeuListScreen
 import com.example.festivaljeumobile.ui.screens.reservation.ReservationFormScreen
 import com.example.festivaljeumobile.ui.screens.reservation.ReservationScreen
+import com.example.festivaljeumobile.ui.screens.reservant.ReservantFormScreen
+import com.example.festivaljeumobile.ui.screens.reservant.ReservantScreen
 import com.example.festivaljeumobile.ui.screens.user.UserFormScreen
 import com.example.festivaljeumobile.ui.screens.user.UserListScreen
 import com.example.festivaljeumobile.viewModel.auth.AuthEvent
@@ -113,6 +115,7 @@ fun AppNavHost() {
     val isDetailDestination = currentDestination is FestivalForm ||
         currentDestination is FestivalDetails ||
         currentDestination is ReservationForm ||
+        currentDestination is ReservantForm ||
         currentDestination is JeuForm ||
         currentDestination is JeuEditForm ||
         currentDestination is UserCreate ||
@@ -137,6 +140,11 @@ fun AppNavHost() {
     val canManageReservations = currentUserRole in setOf(
         UserRole.Admin,
         UserRole.SuperOrganisateur,
+    )
+    val canManageReservants = currentUserRole in setOf(
+        UserRole.Admin,
+        UserRole.SuperOrganisateur,
+        UserRole.Organisateur,
     )
 
     LaunchedEffect(Unit) {
@@ -283,6 +291,43 @@ fun AppNavHost() {
                         )
                     }
 
+                    entry<Reservants> {
+                        ReservantScreen(
+                            onAddReservantClick = {
+                                backStack.add(ReservantForm())
+                            },
+                            onReservantClick = { reservant ->
+                                // Placeholder pour détail (à développer si besoin)
+                            },
+                            onEditReservantClick = { reservant ->
+                                backStack.add(
+                                    ReservantForm(
+                                        id = reservant.id,
+                                        nom = reservant.nom,
+                                        prenom = reservant.prenom,
+                                        email = reservant.email,
+                                        telephone = reservant.telephone,
+                                        entreprise = reservant.entreprise,
+                                        adresse = reservant.adresse,
+                                        codePostal = reservant.codePostal,
+                                        ville = reservant.ville,
+                                    )
+                                )
+                            },
+                            canManageReservants = canManageReservants,
+                        )
+                    }
+
+                    entry<ReservantForm> { reservantForm ->
+                        ReservantFormScreen(
+                            initialReservant = reservantForm.toReservantOrNull(),
+                            onBackClick = { backStack.removeLastOrNull() },
+                        )
+                    }
+
+                    entry<Benevoles> { Text("Benevoles") }
+                    entry<Editeurs> { Text("Editeurs") }
+
                     entry<Jeux> {
                         JeuListScreen(
                             viewModel = jeuListViewModel,
@@ -360,9 +405,6 @@ fun AppNavHost() {
                         )
                     }
 
-                    entry<Benevoles> { Text("Benevoles") }
-                    entry<Editeurs> { Text("Editeurs") }
-                    entry<Reservants> { Text("Reservants") }
                     entry<Admin> {
                         AdminScreen(
                             onUsersClick = { backStack.add(UserList) },
@@ -416,6 +458,22 @@ private fun UserEdit.toUser() = User(
     role = role,
 )
 
+private fun ReservantForm.toReservantOrNull() =
+    id?.let {
+        com.example.festivaljeumobile.domain.model.Reservant(
+            id = it,
+            nom = nom,
+            type = com.example.festivaljeumobile.domain.model.ReservantType.valueOf(type),
+            prenom = prenom,
+            email = email?.ifBlank { null },
+            telephone = telephone?.ifBlank { null },
+            entreprise = entreprise?.ifBlank { null },
+            adresse = adresse?.ifBlank { null },
+            codePostal = codePostal?.ifBlank { null },
+            ville = ville?.ifBlank { null },
+        )
+    }
+
 private fun NavBarDestination.isVisibleFor(role: UserRole?): Boolean =
     when (role) {
         UserRole.Admin -> true
@@ -424,6 +482,7 @@ private fun NavBarDestination.isVisibleFor(role: UserRole?): Boolean =
             NavBarDestination.FESTIVALS,
             NavBarDestination.JEUX,
             NavBarDestination.RESERVATIONS,
+            NavBarDestination.RESERVANTS,
             NavBarDestination.LOGOUT,
         )
         else -> this in setOf(

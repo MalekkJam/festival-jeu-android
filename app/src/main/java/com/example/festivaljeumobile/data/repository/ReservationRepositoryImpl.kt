@@ -49,7 +49,7 @@ class ReservationRepositoryImpl(
             } catch (throwable: Throwable) {
                 Result.failure(
                     when (throwable) {
-                        is IOException -> OfflineException()
+                        is IOException -> OfflineException("Mode hors ligne : affichage des réservations en cache.")
                         is HttpException -> Exception("Erreur serveur (${throwable.code()}).")
                         else -> Exception("Impossible de recuperer les reservations.")
                     }
