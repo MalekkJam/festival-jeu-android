@@ -1,0 +1,327 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 11,
+    "identityHash": "2aa15d3e71cdb1cf36365fdc397bf92d",
+    "entities": [
+      {
+        "tableName": "festivals",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `nom` TEXT NOT NULL, `date_debut` TEXT NOT NULL, `date_fin` TEXT NOT NULL, `nbTables` INTEGER NOT NULL, `zoneTarifaires` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nom",
+            "columnName": "nom",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "date_debut",
+            "columnName": "date_debut",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "date_fin",
+            "columnName": "date_fin",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nbTables",
+            "columnName": "nbTables",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "zoneTarifaires",
+            "columnName": "zoneTarifaires",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "zone_tarifaires",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `festivalId` INTEGER NOT NULL, `nom` TEXT NOT NULL, `nbTables` INTEGER NOT NULL, `prixDuM2` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`festivalId`) REFERENCES `festivals`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "festivalId",
+            "columnName": "festivalId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nom",
+            "columnName": "nom",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nbTables",
+            "columnName": "nbTables",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "prixDuM2",
+            "columnName": "prixDuM2",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_zone_tarifaires_festivalId",
+            "unique": false,
+            "columnNames": [
+              "festivalId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_zone_tarifaires_festivalId` ON `${TABLE_NAME}` (`festivalId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "festivals",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "festivalId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "reservations",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `reservantId` INTEGER NOT NULL, `festivalId` INTEGER NOT NULL, `festivalName` TEXT NOT NULL, `reservantName` TEXT NOT NULL, `etatDeSuivi` TEXT NOT NULL, `dateDeContact` TEXT, `remise` TEXT, `montantRemise` INTEGER, `facturee` INTEGER NOT NULL, `payee` INTEGER NOT NULL, `jeux` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reservantId",
+            "columnName": "reservantId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "festivalId",
+            "columnName": "festivalId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "festivalName",
+            "columnName": "festivalName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reservantName",
+            "columnName": "reservantName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "etatDeSuivi",
+            "columnName": "etatDeSuivi",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateDeContact",
+            "columnName": "dateDeContact",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "remise",
+            "columnName": "remise",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "montantRemise",
+            "columnName": "montantRemise",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "facturee",
+            "columnName": "facturee",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payee",
+            "columnName": "payee",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "jeux",
+            "columnName": "jeux",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "jeux",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`idJeu` INTEGER NOT NULL, `libelleJeu` TEXT NOT NULL, `auteurJeu` TEXT, `nbMinJoueurJeu` INTEGER, `nbMaxJoueurJeu` INTEGER, `noticeJeu` TEXT, `idEditeur` INTEGER, `idTypeJeu` INTEGER, `agemini` INTEGER, `prototype` INTEGER, `duree` INTEGER, `theme` TEXT, `description` TEXT, `imageJeu` TEXT, `videoRegle` TEXT, PRIMARY KEY(`idJeu`))",
+        "fields": [
+          {
+            "fieldPath": "idJeu",
+            "columnName": "idJeu",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "libelleJeu",
+            "columnName": "libelleJeu",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "auteurJeu",
+            "columnName": "auteurJeu",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "nbMinJoueurJeu",
+            "columnName": "nbMinJoueurJeu",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "nbMaxJoueurJeu",
+            "columnName": "nbMaxJoueurJeu",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "noticeJeu",
+            "columnName": "noticeJeu",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "idEditeur",
+            "columnName": "idEditeur",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "idTypeJeu",
+            "columnName": "idTypeJeu",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "agemini",
+            "columnName": "agemini",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "prototype",
+            "columnName": "prototype",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "duree",
+            "columnName": "duree",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "theme",
+            "columnName": "theme",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "imageJeu",
+            "columnName": "imageJeu",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "videoRegle",
+            "columnName": "videoRegle",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "idJeu"
+          ]
+        }
+      },
+      {
+        "tableName": "reservants",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `nom` TEXT NOT NULL, `type` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nom",
+            "columnName": "nom",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2aa15d3e71cdb1cf36365fdc397bf92d')"
+    ]
+  }
+}

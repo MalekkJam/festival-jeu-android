@@ -74,15 +74,8 @@ private fun ReservantScreenPreview() {
                 reservants = listOf(
                     Reservant(
                         id = 1,
-                        nom = "Dupont",
-                        type = ReservantType.Editeur,
-                        prenom = "Jean",
-                        email = "jean.dupont@example.com",
-                        telephone = "0601020304",
-                        entreprise = "Acme Corp",
-                        adresse = "123 Rue Exemple",
-                        codePostal = "75001",
-                        ville = "Paris"
+                        nom = "Association Demo",
+                        type = ReservantType.Association,
                     )
                 )
             ),

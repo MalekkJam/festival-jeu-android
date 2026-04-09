@@ -16,7 +16,7 @@ import com.example.festivaljeumobile.data.local.entity.ZoneTarifaireEntity
 
 @Database(
     entities = [FestivalEntity::class, ZoneTarifaireEntity::class, ReservationEntity::class, JeuEntity::class, ReservantEntity::class],
-    version = 10,
+    version = 11,
     exportSchema = true
 )
 @TypeConverters(ZoneTarifaireConverters::class, ReservationConverters::class)

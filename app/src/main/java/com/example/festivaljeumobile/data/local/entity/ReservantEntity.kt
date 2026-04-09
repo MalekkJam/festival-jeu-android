@@ -13,14 +13,7 @@ import com.example.festivaljeumobile.domain.model.ReservantType
 data class ReservantEntity(
     @PrimaryKey val id: Int,
     val nom: String,
-    val type: String, // Stored as String, converted to enum on read
-    val prenom: String = "",
-    val email: String? = null,
-    val telephone: String? = null,
-    val entreprise: String? = null,
-    val adresse: String? = null,
-    val codePostal: String? = null,
-    val ville: String? = null,
+    val type: String,
 ) {
     /**
      * Convertit l'entité Room vers le modèle métier Domain
@@ -30,12 +23,5 @@ data class ReservantEntity(
             id = id,
             nom = nom,
             type = ReservantType.valueOf(type),
-            prenom = prenom,
-            email = email,
-            telephone = telephone,
-            entreprise = entreprise,
-            adresse = adresse,
-            codePostal = codePostal,
-            ville = ville,
         )
 }

@@ -19,13 +19,6 @@ data class ReservantDto(
     val id: Int,
     val nom: String,
     val type: ReservantType,
-    val prenom: String = "",
-    val email: String? = null,
-    val telephone: String? = null,
-    val entreprise: String? = null,
-    val adresse: String? = null,
-    val codePostal: String? = null,
-    val ville: String? = null,
 )
 
 /**
@@ -45,13 +38,6 @@ fun ReservantDto.toEntity(): ReservantEntity =
         id = id,
         nom = nom,
         type = type.name,
-        prenom = prenom,
-        email = email,
-        telephone = telephone,
-        entreprise = entreprise,
-        adresse = adresse,
-        codePostal = codePostal,
-        ville = ville
     )
 
 /**
@@ -68,13 +54,6 @@ fun ReservantDto.toDomain(): Reservant =
         id = id,
         nom = nom,
         type = type,
-        prenom = prenom,
-        email = email,
-        telephone = telephone,
-        entreprise = entreprise,
-        adresse = adresse,
-        codePostal = codePostal,
-        ville = ville
     )
 
 /**
@@ -85,13 +64,6 @@ fun ReservantEntity.toDomain(): Reservant =
         id = id,
         nom = nom,
         type = ReservantType.valueOf(type),
-        prenom = prenom,
-        email = email,
-        telephone = telephone,
-        entreprise = entreprise,
-        adresse = adresse,
-        codePostal = codePostal,
-        ville = ville
     )
 
 /**
@@ -109,13 +81,6 @@ fun Reservant.toDto(): ReservantDto =
         id = id,
         nom = nom,
         type = type,
-        prenom = prenom,
-        email = email,
-        telephone = telephone,
-        entreprise = entreprise,
-        adresse = adresse,
-        codePostal = codePostal,
-        ville = ville
     )
 
 /**
@@ -126,13 +91,6 @@ fun Reservant.toEntity(): ReservantEntity =
         id = id,
         nom = nom,
         type = type.name,
-        prenom = prenom,
-        email = email,
-        telephone = telephone,
-        entreprise = entreprise,
-        adresse = adresse,
-        codePostal = codePostal,
-        ville = ville
     )
 
 /**

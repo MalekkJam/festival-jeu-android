@@ -103,6 +103,7 @@ fun AppNavHost() {
             app.cookieDataStore.readUserRole()
         }
     }
+
     val showNavBar = currentDestination != null && currentDestination !is Login
     val isDetailDestination = currentDestination is FestivalForm ||
         currentDestination is FestivalDetails ||
@@ -119,6 +120,7 @@ fun AppNavHost() {
     val jeuListViewModel = remember { JeuListViewModel(app.jeuRepository) }
     val scope = rememberCoroutineScope()
     val isOffline = !context.isOnline()
+
     val canManageGames = currentUserRole in setOf(
         UserRole.Admin,
         UserRole.SuperOrganisateur,
@@ -135,7 +137,6 @@ fun AppNavHost() {
     val canManageReservants = currentUserRole in setOf(
         UserRole.Admin,
         UserRole.SuperOrganisateur,
-        UserRole.Organisateur,
     )
 
     LaunchedEffect(Unit) {
@@ -290,20 +291,20 @@ fun AppNavHost() {
                                 backStack.add(ReservantForm())
                             },
                             onReservantClick = { reservant ->
-                                // Placeholder pour détail (à développer si besoin)
+                                backStack.add(
+                                    ReservantForm(
+                                        id = reservant.id,
+                                        nom = reservant.nom,
+                                        type = reservant.type.name,
+                                    )
+                                )
                             },
                             onEditReservantClick = { reservant ->
                                 backStack.add(
                                     ReservantForm(
                                         id = reservant.id,
                                         nom = reservant.nom,
-                                        prenom = reservant.prenom,
-                                        email = reservant.email,
-                                        telephone = reservant.telephone,
-                                        entreprise = reservant.entreprise,
-                                        adresse = reservant.adresse,
-                                        codePostal = reservant.codePostal,
-                                        ville = reservant.ville,
+                                        type = reservant.type.name,
                                     )
                                 )
                             },
@@ -452,13 +453,6 @@ private fun ReservantForm.toReservantOrNull() =
             id = it,
             nom = nom,
             type = com.example.festivaljeumobile.domain.model.ReservantType.valueOf(type),
-            prenom = prenom,
-            email = email?.ifBlank { null },
-            telephone = telephone?.ifBlank { null },
-            entreprise = entreprise?.ifBlank { null },
-            adresse = adresse?.ifBlank { null },
-            codePostal = codePostal?.ifBlank { null },
-            ville = ville?.ifBlank { null },
         )
     }
 
@@ -477,6 +471,7 @@ private fun NavBarDestination.isVisibleFor(role: UserRole?): Boolean =
             NavBarDestination.FESTIVALS,
             NavBarDestination.JEUX,
             NavBarDestination.RESERVATIONS,
+            NavBarDestination.RESERVANTS,
             NavBarDestination.LOGOUT,
         )
     }

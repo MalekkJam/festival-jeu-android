@@ -39,14 +39,7 @@ data class FestivalDetails(
 @Serializable data class ReservantForm(
     val id: Int? = null,
     val nom: String = "",
-    val prenom: String = "",
     val type: String = "Association", // Default type, serialized as String for navigation
-    val email: String? = null,
-    val telephone: String? = null,
-    val entreprise: String? = null,
-    val adresse: String? = null,
-    val codePostal: String? = null,
-    val ville: String? = null,
 ) : NavKey
 @Serializable object Admin : NavKey
 @Serializable object UserList : NavKey

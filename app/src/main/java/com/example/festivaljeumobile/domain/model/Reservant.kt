@@ -12,11 +12,4 @@ data class Reservant(
     val id: Int,
     val nom: String,
     val type: ReservantType,
-    val prenom: String = "",
-    val email: String? = null,
-    val telephone: String? = null,
-    val entreprise: String? = null,
-    val adresse: String? = null,
-    val codePostal: String? = null,
-    val ville: String? = null,
 )

@@ -10,11 +10,17 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -25,20 +31,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.festivaljeumobile.domain.model.Reservant
+import com.example.festivaljeumobile.domain.model.ReservantType
 import com.example.festivaljeumobile.viewModel.reservant.ReservantFormEvent
 import com.example.festivaljeumobile.viewModel.reservant.ReservantFormViewModel
 import kotlinx.coroutines.delay
 
-/**
- * Écran formulaire pour créer/éditer un réservant.
- * Composable pur avec injection manuelle du ViewModel.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReservantFormScreen(
@@ -59,9 +63,8 @@ fun ReservantFormScreen(
         reservantFormViewModel.events.collect { event ->
             when (event) {
                 is ReservantFormEvent.Saved -> {
-                    snackbarHostState.showSnackbar("Réservant sauvegardé avec succès.")
-                    // Petit délai pour la perception utilisateur
-                    kotlinx.coroutines.delay(500)
+                    snackbarHostState.showSnackbar("Reservant sauvegarde avec succes.")
+                    delay(500)
                     onBackClick()
                 }
             }
@@ -73,7 +76,11 @@ fun ReservantFormScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = if (uiState.isEditMode) "Éditer un réservant" else "Ajouter un réservant"
+                        text = when {
+                            readOnly -> "Details du reservant"
+                            uiState.isEditMode -> "Modifier un reservant"
+                            else -> "Ajouter un reservant"
+                        }
                     )
                 },
                 navigationIcon = {
@@ -96,16 +103,15 @@ fun ReservantFormScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(bottom = 32.dp)
         ) {
-            // Affichage des erreurs
             if (uiState.error != null) {
                 item {
-                    androidx.compose.material3.Card(
-                        colors = androidx.compose.material3.CardDefaults.cardColors(
+                    Card(
+                        colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.errorContainer
                         )
                     ) {
                         Text(
-                            text = uiState.error!!,
+                            text = uiState.error.orEmpty(),
                             color = MaterialTheme.colorScheme.onErrorContainer,
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(16.dp)
@@ -114,7 +120,6 @@ fun ReservantFormScreen(
                 }
             }
 
-            // Champs du formulaire
             item {
                 OutlinedTextField(
                     value = uiState.nom,
@@ -127,92 +132,28 @@ fun ReservantFormScreen(
             }
 
             item {
-                OutlinedTextField(
-                    value = uiState.prenom,
-                    onValueChange = { if (!readOnly) reservantFormViewModel.onPrenomChange(it) },
-                    label = { Text("Prénom *") },
-                    modifier = Modifier.fillMaxWidth(),
+                ReservantTypeField(
+                    value = uiState.type,
                     readOnly = readOnly,
-                    singleLine = true
+                    enabled = !uiState.isSubmitting,
+                    onValueChange = reservantFormViewModel::onTypeChange,
                 )
             }
 
             item {
-                OutlinedTextField(
-                    value = uiState.email,
-                    onValueChange = { if (!readOnly) reservantFormViewModel.onEmailChange(it) },
-                    label = { Text("Email") },
-                    modifier = Modifier.fillMaxWidth(),
-                    readOnly = readOnly,
-                    singleLine = true
-                )
-            }
-
-            item {
-                OutlinedTextField(
-                    value = uiState.telephone,
-                    onValueChange = { if (!readOnly) reservantFormViewModel.onTelephoneChange(it) },
-                    label = { Text("Téléphone") },
-                    modifier = Modifier.fillMaxWidth(),
-                    readOnly = readOnly,
-                    singleLine = true
-                )
-            }
-
-            item {
-                OutlinedTextField(
-                    value = uiState.entreprise,
-                    onValueChange = { if (!readOnly) reservantFormViewModel.onEntrepriseChange(it) },
-                    label = { Text("Entreprise") },
-                    modifier = Modifier.fillMaxWidth(),
-                    readOnly = readOnly,
-                    singleLine = true
-                )
-            }
-
-            item {
-                OutlinedTextField(
-                    value = uiState.adresse,
-                    onValueChange = { if (!readOnly) reservantFormViewModel.onAdresseChange(it) },
-                    label = { Text("Adresse") },
-                    modifier = Modifier.fillMaxWidth(),
-                    readOnly = readOnly,
-                    singleLine = true
-                )
-            }
-
-            item {
-                OutlinedTextField(
-                    value = uiState.codePostal,
-                    onValueChange = { if (!readOnly) reservantFormViewModel.onCodePostalChange(it) },
-                    label = { Text("Code postal") },
-                    modifier = Modifier.fillMaxWidth(),
-                    readOnly = readOnly,
-                    singleLine = true
-                )
-            }
-
-            item {
-                OutlinedTextField(
-                    value = uiState.ville,
-                    onValueChange = { if (!readOnly) reservantFormViewModel.onVilleChange(it) },
-                    label = { Text("Ville") },
-                    modifier = Modifier.fillMaxWidth(),
-                    readOnly = readOnly,
-                    singleLine = true
-                )
-            }
-
-            // Boutons d'action
-            if (!readOnly) {
-                item {
+                if (readOnly) {
+                    OutlinedButton(
+                        onClick = onBackClick,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Retour a la liste")
+                    }
+                } else {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 16.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Button(
+                        OutlinedButton(
                             onClick = onBackClick,
                             modifier = Modifier.weight(1f)
                         ) {
@@ -226,16 +167,73 @@ fun ReservantFormScreen(
                         ) {
                             if (uiState.isSubmitting) {
                                 CircularProgressIndicator(
-                                    modifier = Modifier
-                                        .padding(end = 8.dp)
-                                        .align(Alignment.CenterVertically),
+                                    modifier = Modifier.padding(end = 8.dp),
                                     strokeWidth = 2.dp
                                 )
                             }
-                            Text("Sauvegarder")
+                            Text(
+                                if (uiState.isEditMode) "Mettre a jour" else "Creer"
+                            )
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ReservantTypeField(
+    value: ReservantType,
+    readOnly: Boolean,
+    enabled: Boolean,
+    onValueChange: (ReservantType) -> Unit,
+) {
+    if (readOnly) {
+        OutlinedTextField(
+            value = value.name,
+            onValueChange = {},
+            label = { Text("Type") },
+            modifier = Modifier.fillMaxWidth(),
+            readOnly = true,
+            singleLine = true
+        )
+        return
+    }
+
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { if (enabled) expanded = !expanded }
+    ) {
+        OutlinedTextField(
+            value = value.name,
+            onValueChange = {},
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth(),
+            readOnly = true,
+            label = { Text("Type") },
+            enabled = enabled,
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+            }
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            ReservantType.entries.forEach { type ->
+                DropdownMenuItem(
+                    text = { Text(type.name) },
+                    onClick = {
+                        expanded = false
+                        onValueChange(type)
+                    }
+                )
             }
         }
     }

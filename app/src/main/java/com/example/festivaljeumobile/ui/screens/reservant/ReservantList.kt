@@ -34,11 +34,6 @@ import com.example.festivaljeumobile.domain.model.Reservant
 import com.example.festivaljeumobile.ui.screens.festival.StatusCard
 import com.example.festivaljeumobile.viewModel.reservant.ReservantListUiState
 
-/**
- * Composable UI pour l'affichage de la liste des réservants.
- * Composable pur - ne dépend pas du ViewModel, reçoit tous les données et callbacks.
- * Réutilisable et testable.
- */
 @Composable
 fun ReservantList(
     uiState: ReservantListUiState,
@@ -55,7 +50,6 @@ fun ReservantList(
             .fillMaxSize()
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        // Bouton Ajouter (si permissions)
         if (canManageReservants && !uiState.isOffline) {
             Button(
                 onClick = onAddReservantClick,
@@ -66,7 +60,7 @@ fun ReservantList(
                     contentDescription = null
                 )
                 Text(
-                    text = "Ajouter un réservant",
+                    text = "Ajouter un reservant",
                     modifier = Modifier.padding(start = 8.dp)
                 )
             }
@@ -74,7 +68,6 @@ fun ReservantList(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Status offline
         if (uiState.isOffline) {
             StatusCard(
                 text = "Mode hors ligne : affichage du cache local.",
@@ -84,7 +77,6 @@ fun ReservantList(
             Spacer(modifier = Modifier.height(12.dp))
         }
 
-        // Affichage erreurs
         if (uiState.error != null) {
             Card(
                 colors = CardDefaults.cardColors(
@@ -104,7 +96,7 @@ fun ReservantList(
                         onClick = onRetryClick,
                         modifier = Modifier.align(Alignment.End)
                     ) {
-                        Text("Réessayer")
+                        Text("Reessayer")
                     }
                 }
             }
@@ -112,7 +104,6 @@ fun ReservantList(
             Spacer(modifier = Modifier.height(12.dp))
         }
 
-        // Loading indicator si refresh en cours et liste existante
         if (uiState.isLoading && uiState.reservants.isNotEmpty()) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -121,7 +112,7 @@ fun ReservantList(
             ) {
                 CircularProgressIndicator(modifier = Modifier.height(20.dp), strokeWidth = 2.dp)
                 Text(
-                    text = "Mise à jour des réservants...",
+                    text = "Mise a jour des reservants...",
                     modifier = Modifier.padding(start = 12.dp),
                     style = MaterialTheme.typography.bodyMedium
                 )
@@ -130,7 +121,6 @@ fun ReservantList(
             Spacer(modifier = Modifier.height(12.dp))
         }
 
-        // Contenu principal : liste ou placeholder
         when {
             uiState.isLoading && uiState.reservants.isEmpty() -> {
                 Box(
@@ -147,7 +137,7 @@ fun ReservantList(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Aucun réservant disponible",
+                        text = "Aucun reservant disponible",
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
@@ -179,9 +169,6 @@ fun ReservantList(
     }
 }
 
-/**
- * Card pour afficher un réservant unique avec actions possibles.
- */
 @Composable
 fun ReservantCard(
     reservant: Reservant,
@@ -194,8 +181,8 @@ fun ReservantCard(
     modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier = modifier
-            .fillMaxWidth(),
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
@@ -204,57 +191,18 @@ fun ReservantCard(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Nom complet - header principal
             Text(
-                text = "${reservant.prenom} ${reservant.nom}",
+                text = reservant.nom,
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            // Infos de contact (s'il y en a)
-            if (!reservant.email.isNullOrBlank() || !reservant.telephone.isNullOrBlank()) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.padding(start = 8.dp)
-                ) {
-                    reservant.email?.takeIf { it.isNotBlank() }?.let {
-                        Text(
-                            text = "📧 $it",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    reservant.telephone?.takeIf { it.isNotBlank() }?.let {
-                        Text(
-                            text = "☎️ $it",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
+            Text(
+                text = "Type : ${reservant.type.name}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
 
-            // Adresse/Localisation (s'il y en a)
-            if (!reservant.ville.isNullOrBlank()) {
-                Text(
-                    text = "📍 ${reservant.codePostal?.let { "$it - " } ?: ""}${reservant.ville}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(start = 8.dp)
-                )
-            }
-
-            // Entreprise (s'il y en a)
-            reservant.entreprise?.takeIf { it.isNotBlank() }?.let {
-                Text(
-                    text = "🏢 $it",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(start = 8.dp)
-                )
-            }
-
-            // Actions (edit/delete si permissions)
             if (canEdit || canDelete) {
                 Row(
                     modifier = Modifier
@@ -269,7 +217,7 @@ fun ReservantCard(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
-                                contentDescription = "Éditer",
+                                contentDescription = "Editer",
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
